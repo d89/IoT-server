@@ -1,5 +1,4 @@
 module.exports = {
-    useSsl: true,
     port: 3000,
     sslPrivateKeyPath: "/etc/letsencrypt/live/d1303.de/privkey.pem",
     sslCertificate: "/etc/letsencrypt/live/d1303.de/cert.pem",

@@ -21,37 +21,25 @@ var glob = require('glob');
 var path = require('path');
 
 //config
-const use_ssl = config.useSsl;
 const port = config.port;
-var http = use_ssl ? require('https') : require('http');
+var https = require('https');
 
 //---------------------------------------------------------------------------
 
-var ssl_object = {};
+var privateKey = fs.readFileSync(config.sslPrivateKeyPath);
+var certificate = fs.readFileSync(config.sslCertificate);
+var ca = fs.readFileSync(config.sslCa);
+var ssl_object = {
+    key: privateKey,
+    cert: certificate,
+    ca: [ ca ] //only one cert block in chain, so that's fine. Splitting would be necessary otherwise
+};	
 
-if (use_ssl)
+var server = https.createServer(ssl_object, app).listen(port, function()
 {
-	var privateKey = fs.readFileSync(config.sslPrivateKeyPath);
-	var certificate = fs.readFileSync(config.sslCertificate);
-	var ca = fs.readFileSync(config.sslCa);
-	ssl_object = {
-		key: privateKey,
-		cert: certificate,
-		ca: [ ca ] //only one cert block in chain, so that's fine. Splitting would be necessary otherwise
-	};	
-	
-	var server = http.createServer(ssl_object, app).listen(port, function()
-	{
-		logger.info(`listening on *:${port}`);
-	});
-}
-else
-{
-	var server = http.createServer(app).listen(port, function()
-	{
-		logger.info(`listening on *:${port}`);
-	});
-}
+    logger.info(`listening on *:${port}`);
+});
+
 //---------------------------------------------------------------------------
 
 io.use(middleware);
