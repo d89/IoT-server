@@ -4,5 +4,5 @@ module.exports = {
     sslCertificate: "/etc/letsencrypt/live/d1303.de/cert.pem",
     sslCa: "/etc/letsencrypt/live/d1303.de/chain.pem",
     gcmApiKey: "AIzaSyDMIONadjo6tWFFLApBMUopC9O6Z_97cuQ",
-    mediaBasePath: '/var/www/d1303.de/server/uploads'
+    mediaBasePath: '/var/www/d1303.de/IoT-server/uploads'
 };
