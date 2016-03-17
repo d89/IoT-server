@@ -5,16 +5,61 @@ Home control server unit that works together with IoT-raspberry
 
 ## Server-Setup
 
-***Preconditions for node mongo***
+### Preconditions
+
 ```
-apt-get install libkrb5-dev
-npm install -g node-gyp
-npm install mongo
+apt-get install -y build-essential git
 ```
 
-***Setting up***
+### node.js
+
+Install node 5 and above, as described here: https://nodejs.org/en/download/package-manager/
+
 ```
-npm install -g bower gulp forever
+curl -sL https://deb.nodesource.com/setup_5.x | sudo -E bash -
+apt-get install -y nodejs
+```
+
+### mongodb
+
+As described here: https://docs.mongodb.org/manual/tutorial/install-mongodb-on-ubuntu/
+Be careful with Ubuntu 15.X as mongo has not switched to systemd yet (https://rohan-paul.github.io/mongodb_in_ubuntu/2015/09/03/How_to_Install_MongoDB_Iin_Ubuntu-15.04.html)
+
+```
+apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv EA312927
+echo "deb http://repo.mongodb.org/apt/ubuntu trusty/mongodb-org/3.2 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-3.2.list
+apt-get update
+apt-get install -y mongodb-org
+service mongod start
+```
+
+
+### SSL
+
+SSL is strictly necessary for operating the IoT-server. All the IoT-raspberrys talk to your server over an encrypted SSL tunnel.
+
+***Install letsencrypt***
+
+```
+cd /opt
+git clone https://github.com/letsencrypt/letsencrypt
+```
+
+***Create certs for your domain***
+
+```
+/opt/letsencrypt/letsencrypt-auto certonly --standalone --renew-by-default --email mueller.dav@gmail.com -d d1303.de
+```
+
+Pay attention that the path, where the generated certificates end up, matches what is entered in the ```config.js```.
+
+Can be automated by a cronjob. As the certificates are valid for 90 days currently, once per month should be good enough.
+
+### Installing the application itself
+
+```
+npm install -g bower gulp forever node-gyp
+mkdir -p /var/www/d1303.de
 cd /var/www/d1303.de
 mkdir logs
 git clone https://github.com/d89/IoT-server.git
@@ -36,33 +81,6 @@ SSL is necessary. Use letsencrypt, it's free.
 * gcmApiKey: the api key of your google cloud messenging api if you want to utilize push messages (more to be described soon).
 * mediaBasePath: Path where videos are stored, that the raspberry uploads (only relevant, if you have a camera on your raspberry).
 * dsn: config base DSN for your mongodb database
-
----
-
-## SSL
-
-SSL is strictly necessary for operating the IoT-server. All the IoT-raspberrys talk to your server over an encrypted SSL tunnel.
-
-***Install letsencrypt***
-
-```
-cd /opt
-git clone https://github.com/letsencrypt/letsencrypt
-```
-
-***Create certs for d1303.de and www.d1303.de (subdomain not necessary)***
-
-```
-systemctl stop iot-server #shut down server
-/opt/letsencrypt/letsencrypt-auto certonly --standalone --renew-by-default --email mueller.dav@gmail.com -d d1303.de -d www.d1303.de
-systemctl start iot-server
-```
-
-Pay attention that the path, where the generated certificates end up, matches what is entered in the ```config.js```.
-
-Can be automated by a cronjob. As the certificates are valid for 90 days currently, once per month should be good enough.
-
----
 
 ## Launch
 
