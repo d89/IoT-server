@@ -35,6 +35,7 @@ SSL is necessary. Use letsencrypt, it's free.
 * sslCa: your certificate chain.
 * gcmApiKey: the api key of your google cloud messenging api if you want to utilize push messages (more to be described soon).
 * mediaBasePath: Path where videos are stored, that the raspberry uploads (only relevant, if you have a camera on your raspberry).
+* dsn: config base DSN for your mongodb database
 
 ---
 
