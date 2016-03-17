@@ -38,6 +38,29 @@ SSL is necessary. Use letsencrypt, it's free.
 
 ---
 
+## SSL
+
+SSL is strictly necessary for operating the IoT-server. All the IoT-raspberrys talk to your server over an encrypted SSL tunnel.
+
+***Install letsencrypt***
+
+```
+cd /opt
+git clone https://github.com/letsencrypt/letsencrypt
+```
+
+***Create certs for d1303.de and www.d1303.de (subdomain not necessary)***
+
+```
+systemctl stop iot-server #shut down server
+/opt/letsencrypt/letsencrypt-auto certonly --standalone --renew-by-default --email mueller.dav@gmail.com -d d1303.de -d www.d1303.de
+systemctl start iot-server
+```
+
+Can be automated by a cronjob. As the certificates are valid for 90 days currently, once per month should be good enough.
+
+---
+
 ## Launch
 
 for a quick launch, while you are connected via SSH:
@@ -83,6 +106,7 @@ systemctl status iot-server
 ```
 
 ---
+
 ## Cronjobs
 
 Without data point aggregation, your mongodb database will fairly quick overflow. Once an hour, the datapoints are aggregated to an hourly level. Datapoints older than one week are aggregated to a "per day" level. 
