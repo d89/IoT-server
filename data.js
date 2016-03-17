@@ -46,6 +46,13 @@ io.use(middleware);
 
 //---------------------------------------------------------------------------
 
+function getSockets()
+{
+    var sockets = io.sockets.sockets;
+
+    return ("length" in sockets) ? sockets : [];
+}
+
 function getSocketType(socket)
 {
 	if (socket.handshake.query.mode === "ui" && getClientId(socket))
@@ -112,7 +119,7 @@ function getUiSocketsByClientSocket(clientSocket)
 {
     var responseUiSockets = [];
 
-    io.sockets.sockets.forEach(function(s)
+    getSockets().forEach(function(s)
     {
         if (getSocketType(s) === "ui" && getClientId(s) === getClientName(clientSocket))
         {
@@ -128,7 +135,7 @@ function getClientSocketByUiSocket(uiSocket, dataReceived)
     var forClient = getClientId(uiSocket);
     var responseClientSocket = null;
 
-    io.sockets.sockets.forEach(function(s)
+    getSockets().forEach(function(s)
     {
         if (getSocketType(s) === "client" && forClient === getClientName(s))
         {
@@ -172,7 +179,7 @@ function getClientSocketByClientName(clientName)
 
     var responseClientSocket = null;
 
-    io.sockets.sockets.forEach(function(s)
+    getSockets().forEach(function(s)
     {
         if (getSocketType(s) === "client" && getClientName(s) === clientName)
         {
@@ -467,7 +474,7 @@ app.get('/clients/get', function(req, res)
 {
 	var clients = [];
 
-	io.sockets.sockets.forEach(function(s)
+    getSockets().forEach(function(s)
 	{
 		if (getSocketType(s) === "client")
 		{
