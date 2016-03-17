@@ -8,7 +8,7 @@ Home control server unit that works together with IoT-raspberry
 ***Preconditions for node mongo***
 ```
 apt-get install libkrb5-dev
-npm install -g node-gyp 
+npm install -g node-gyp
 npm install mongo
 ```
 
@@ -83,6 +83,18 @@ systemctl status iot-server
 ```
 
 ---
+## Cronjobs
+
+Without data point aggregation, your mongodb database will fairly quick overflow. Once an hour, the datapoints are aggregated to an hourly level. Datapoints older than one week are aggregated to a "per day" level. 
+
+Add this to your ```/etc/crontab```
+
+```
+0  *    * * *   root    cd /var/www/d1303.de/IoT-server && node aggregator.js >/dev/null
+37 13   * * *   root    cd /var/www/d1303.de/IoT-server && node sendpush.js >/dev/null
+```
+
+The second script executes once a day (at which time doesn't matter, so I put 13:37). It sends a daily summary via GCM push to all registered browsers that once connected to a raspberry.
 
 ## Other things
 Want to send Google Now commands to your raspberry? http://lifehacker.com/how-to-create-custom-voice-commands-with-tasker-and-aut-1282209195
