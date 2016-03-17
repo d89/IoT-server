@@ -57,6 +57,8 @@ systemctl stop iot-server #shut down server
 systemctl start iot-server
 ```
 
+Pay attention that the path, where the generated certificates end up, matches what is entered in the ```config.js```.
+
 Can be automated by a cronjob. As the certificates are valid for 90 days currently, once per month should be good enough.
 
 ---
