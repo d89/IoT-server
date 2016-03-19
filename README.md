@@ -58,7 +58,7 @@ Can be automated by a cronjob. As the certificates are valid for 90 days current
 ### Installing the application itself
 
 ```
-npm install -g bower gulp forever node-gyp
+npm install -g bower gulp node-gyp
 mkdir -p /var/www/d1303.de
 cd /var/www/d1303.de
 mkdir logs
@@ -94,38 +94,30 @@ For a more sophisticated operation, use a launch script.
 
 ---
 
-## Launch script
-
-**systemd** style, roll your own for init.d or upstart. Or use pm2.
+## Register as a service
 
 ```
-nano /lib/systemd/system/iot-server.service
+npm install -g pm2
+pm2 start /var/www/d1303.de/IoT-server/index.js --name iot-server && pm2 startup
 ```
 
-with content:
+*** restart service ***
 
 ```
-[Unit]
-Description=Job that runs the iot-server daemon
-
-[Service]
-Type=simple
-WorkingDirectory=/var/www/d1303.de/IoT-server
-ExecStart=/usr/bin/forever index.js
-Restart=on-failure
-
-[Install]
-WantedBy=multi-user.target
+pm2 restart iot-server
+pm2 stop iot-server
 ```
 
-register:
+*** logs and monitoring ***
 
 ```
-systemctl enable iot-server
-systemctl start iot-server
-systemctl status iot-server
+pm2 logs iot-server
+pm2 show iot-server
+pm2 list iot-server
+pm2 monit iot-server
 ```
 
+See http://pm2.keymetrics.io/docs/usage/quick-start/
 ---
 
 ## Cronjobs
