@@ -49,10 +49,14 @@ git clone https://github.com/letsencrypt/letsencrypt
 ***Create certs for your domain***
 
 ```
-/opt/letsencrypt/letsencrypt-auto certonly --standalone --renew-by-default --email mueller.dav@gmail.com -d d1303.de
+/opt/letsencrypt/letsencrypt-auto certonly --agree-tos --cert-path /opt/keys --standalone --renew-by-default --email mueller.dav@gmail.com -d d1303.de
 ```
 
-Pay attention that the path, where the generated certificates end up, matches what is entered in the ```config.js```.
+Create a symlink in ```/opt/keys``` now or change the ```config.js``` to match the generated certificates.
+
+```
+ln -s /etc/letsencrypt/live/d1303.de /opt/keys
+```
 
 Can be automated by a cronjob. As the certificates are valid for 90 days currently, once per month should be good enough.
 
@@ -120,14 +124,14 @@ npm install -g pm2
 pm2 start /var/www/IoT-server/index.js --name iot-server && pm2 startup
 ```
 
-*** restart service ***
+***restart service***
 
 ```
 pm2 restart iot-server
 pm2 stop iot-server
 ```
 
-*** logs and monitoring ***
+***logs and monitoring***
 
 ```
 pm2 logs iot-server
