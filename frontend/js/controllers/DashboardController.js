@@ -78,9 +78,9 @@ IoT.controller('IoTDashboardCtrl', function ($scope, $rootScope, $timeout, $comp
 
             for (var i = dps.length - 1; i >= 0; i--)
             {
+                if (!("data" in dps[i])) continue;
                 var time = moment(dps[i].created).format('dd, HH:mm:ss');
                 var dp = dps[i].data.toFixed(3);
-
                 labels.push(time);
                 data.push(dp);
             }

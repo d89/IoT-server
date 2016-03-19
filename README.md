@@ -83,10 +83,9 @@ sslCa: false
 
 ```
 npm install -g bower gulp node-gyp
-mkdir -p /var/www/IoT-server && /var/www/IoT-server
-mkdir logs
-git clone https://github.com/d89/IoT-server.git
+git clone https://github.com/d89/IoT-server.git /var/www/IoT-server
 cd /var/www/IoT-server
+mkdir logs
 npm install
 bower install --allow-root
 gulp
