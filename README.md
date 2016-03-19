@@ -122,7 +122,7 @@ For a more sophisticated operation, use a launch script.
 
 ```
 npm install -g pm2
-pm2 start /var/www/IoT-server/index.js --name iot-server && pm2 startup
+cd /var/www/IoT-server && pm2 start index.js --name iot-server && pm2 startup
 ```
 
 ***restart service***
