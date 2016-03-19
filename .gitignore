@@ -30,3 +30,4 @@ dist
 uploads
 .htaccess
 .idea/
+config.js
