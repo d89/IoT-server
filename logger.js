@@ -1,5 +1,6 @@
 var winston = require("winston");
 var moment = require("moment");
+var config = require("./config");
 
 var logger = new (winston.Logger)
 ({
@@ -17,7 +18,7 @@ var logger = new (winston.Logger)
         }}),
         new (winston.transports.File)
         ({
-            filename: './logs/logfile.log',
+            filename: config.logFile,
             maxFiles: 5,
             level: 'debug',
             maxsize: 1024 * 1024, //1mb
