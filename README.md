@@ -67,8 +67,8 @@ If you want to or have to create your own ssl certificate and can't use letsencr
 ```
 mkdir /opt/keys && cd /opt/keys
 openssl genrsa -out privkey.pem 2048
-openssl req -new -key privkey.pem -out csr.pem
-openssl req -x509 -days 365 -key privkey.pem -in csr.pem -out cert.pem
+openssl req -new -key privkey.pem -out csr.pem -subj "/C=DE/ST=Hessen/L=Darmstadt/O=Dis/CN=www.foobar.com"
+openssl req -x509 -days 365 -key privkey.pem -in csr.pem -out cert.pem 
 ```
 
 Change the config accordingly to:
