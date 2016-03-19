@@ -28,11 +28,15 @@ var https = require('https');
 
 var privateKey = fs.readFileSync(config.sslPrivateKeyPath);
 var certificate = fs.readFileSync(config.sslCertificate);
-var ca = config.sslCa ? [ fs.readFileSync(config.sslCa) ] : [];
 var ssl_object = {
     key: privateKey,
     cert: certificate
 };
+
+if (config.sslCa && fs.existsSync(config.sslCa))
+{
+    ssl_object.ca = [ fs.readFileSync(config.sslCa) ];
+}
 
 var server = https.createServer(ssl_object, app).listen(port, function()
 {
