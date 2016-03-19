@@ -68,6 +68,20 @@ IoT.controller('IoTMaintenanceCtrl', function ($scope, $rootScope, $timeout, $co
         SocketFactory.send("ui:maintenance", shutdown);
     };
 
+    $scope.clearLogs = function()
+    {
+        console.log("clearing logs!");
+
+        var clearlogs = {
+            mode: "clearlogs"
+        };
+
+        SocketFactory.send("ui:maintenance", clearlogs, function()
+        {
+            window.location.reload();
+        });
+    };
+
     $scope.getMaintenanceInfo = function()
     {
         console.log("fetching maintenance info");

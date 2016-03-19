@@ -156,7 +156,7 @@ function getClientSocketByUiSocket(uiSocket, dataReceived)
     {
         if (getSocketType(s) === "client" && forClient === getClientName(s))
         {
-            logger.info(`found listening client socket: ${s.id}!`);
+            //logger.info(`found listening client socket: ${s.id}!`);
             responseClientSocket = s;
             return;
         }
@@ -707,12 +707,8 @@ io.on('connection', function(socket)
                 clientSocket.emit("actionrequest", request, cb);
             },
             //-------------------------------------------------------------------------------------
-            'ui:maintenance': function (clientSocket, msg) {
-                var request = {
-                    mode: msg.mode === "shutdown" ? "shutdown" : "restart"
-                };
-
-                clientSocket.emit("maintenance", request);
+            'ui:maintenance': function (clientSocket, msg, resp) {
+                clientSocket.emit("maintenance", msg, resp);
             },
             //-------------------------------------------------------------------------------------
             'ui:audio': function (clientSocket, msg, resp) {
