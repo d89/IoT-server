@@ -89,6 +89,7 @@ mkdir logs
 npm install
 bower install --allow-root
 gulp
+cp config.js.sample config.js
 nano config.js
 ```
 

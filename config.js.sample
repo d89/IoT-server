@@ -4,7 +4,7 @@ module.exports = {
     sslPrivateKeyPath: '/opt/keys/privkey.pem',
     sslCertificate: '/opt/keys/cert.pem',
     sslCa: '/opt/keys/chain.pem', //delete this line if you don't have a chain
-    gcmApiKey: 'AIzaSyDMIONadjo6tWFFLApBMUopC9O6Z_97cuQ',
+    gcmApiKey: '*** snip ***',
     mediaBasePath: '/var/www/IoT-server/uploads',
     dsn: 'mongodb://localhost/IoT'
 };

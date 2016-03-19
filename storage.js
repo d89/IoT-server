@@ -816,3 +816,26 @@ exports.oldAggregation = function(cb)
 
     start();
 };
+
+exports.deleteOldLogs = function(cb)
+{
+    var coll = db.collection('systemlog');
+    var deleteOlderThan = moment().subtract(5, "days").startOf("day");
+
+    coll.deleteMany({
+        created: {$lt: deleteOlderThan.toDate()},
+    }, function(err, res)
+    {
+        if (err)
+        {
+            return cb("delete old logs: " + err);
+        }
+
+        var log = "deleted " + res.result.n + " too old log entries";
+        exports.logEntry("info", log, true);
+        logger.info(log);
+        logger.info("--------------------------------------------------");
+
+        cb(null, log);
+    });
+};

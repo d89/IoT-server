@@ -48,6 +48,22 @@ exports.info = function(client_id, onfinished)
             });
         },
         // --------------------------------------------------------------------------
+        logCount: function(cb)
+        {
+            systemlog.count(function(err, count)
+            {
+                return cb(err, count);
+            });
+        },
+        // --------------------------------------------------------------------------
+        firstLog: function(cb)
+        {
+            systemlog.find({}, { sort: [['created', 1]], limit : 1 }).toArray(function(err, docs)
+            {
+                return cb(err, docs);
+            });
+        },
+        // --------------------------------------------------------------------------
         systemLog: function(cb)
         {
             //fetch all log entries with either global scope or client scope for the current client
@@ -97,6 +113,7 @@ exports.info = function(client_id, onfinished)
         //----------------------------------------------------
 
         var firstDatapoint = results.firstDatapoint[0];
+
         retval.push({
             type: "First Datapoint",
             time: moment(firstDatapoint.created).format("DD.MM. HH:mm"),
@@ -122,6 +139,27 @@ exports.info = function(client_id, onfinished)
             time: moment().format("DD.MM. HH:mm"),
             text: dpCount + " datapoints total in database"
         });
+
+        //----------------------------------------------------
+
+        var firstLog = results.firstLog[0];
+
+        if (firstLog)
+        {
+            retval.push({
+                type: "First Log Entry",
+                time: moment(firstLog.created).format("DD.MM. HH:mm"),
+                text: results.logCount + " logs total in database"
+            });
+        }
+        else
+        {
+            retval.push({
+                type: "First Log Entry",
+                time: moment().format("DD.MM. HH:mm"),
+                text: "Log Entries empty"
+            });
+        }
 
         //----------------------------------------------------
 

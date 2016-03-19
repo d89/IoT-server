@@ -47,6 +47,26 @@ function oldAggregation()
         }
 
         logger.info("##################################################");
+        deleteOldLogs();
+    });
+}
+
+function deleteOldLogs()
+{
+    storage.deleteOldLogs(function(err, msg)
+    {
+        if (err)
+        {
+            logger.error("deleteOldLogs error: " + err);
+            storage.logEntry("error", "deleteOldLogs error: " + err, true);
+        }
+        else
+        {
+            logger.info("deleteOldLogs success: " + msg);
+            storage.logEntry("info", "deleteOldLogs success: " + msg, true);
+        }
+
+        logger.info("##################################################");
 
         process.exit(1);
     });
