@@ -76,11 +76,23 @@ exports.info = function(client_id, onfinished)
         //----------------------------------------------------
 
         var lastAgg = results.lastAggregatedDatapoint[0];
-        retval.push({
-            type: "Last Aggregated Datapoint",
-            time: moment(lastAgg.created).format("DD.MM. HH:mm"),
-            text: "For end time " + moment(lastAgg.to).format("DD.MM. HH:mm") + " and client '" + lastAgg.client_id  + "'"
-        });
+
+        if (lastAgg)
+        {
+            retval.push({
+                type: "Last Aggregated Datapoint",
+                time: moment(lastAgg.created).format("DD.MM. HH:mm"),
+                text: "For end time " + moment(lastAgg.to).format("DD.MM. HH:mm") + " and client '" + lastAgg.client_id  + "'"
+            });
+        }
+        else
+        {
+            retval.push({
+                type: "Last Aggregated Datapoint",
+                time: moment().format("DD.MM. HH:mm"),
+                text: "No aggregated datapoint yet"
+            });
+        }
 
         //----------------------------------------------------
 
