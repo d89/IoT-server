@@ -42,9 +42,11 @@ echo "---------------------------------------------------"
 rsync -Ea staging_dir/ .
 
 echo "---------------------------------------------------"
-echo "installing node modules"
+echo "installing node modules, assets and gulping then"
 echo "---------------------------------------------------"
 npm install
+bower install --allow-root
+gulp
 
 echo "---------------------------------------------------"
 echo "restarting service iot-server"
