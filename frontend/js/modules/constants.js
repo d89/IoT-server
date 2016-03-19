@@ -6,7 +6,6 @@ constants.provider('constant', function()
 {
     var config =
     {
-        serverUrl: 'https://d1303.de:3000',
         camRecordingDuration: 4
     };
 

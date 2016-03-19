@@ -63,7 +63,7 @@ mkdir -p /var/www/d1303.de
 cd /var/www/d1303.de
 mkdir logs
 git clone https://github.com/d89/IoT-server.git
-cd /var/www/d1303.de/IoT-server
+cd /var/www/IoT-server
 npm install
 bower install --allow-root
 gulp
@@ -98,7 +98,7 @@ For a more sophisticated operation, use a launch script.
 
 ```
 npm install -g pm2
-pm2 start /var/www/d1303.de/IoT-server/index.js --name iot-server && pm2 startup
+pm2 start /var/www/IoT-server/index.js --name iot-server && pm2 startup
 ```
 
 *** restart service ***
@@ -127,8 +127,8 @@ Without data point aggregation, your mongodb database will fairly quick overflow
 Add this to your ```/etc/crontab```
 
 ```
-0  *    * * *   root    cd /var/www/d1303.de/IoT-server && node aggregator.js >/dev/null
-37 13   * * *   root    cd /var/www/d1303.de/IoT-server && node sendpush.js >/dev/null
+0  *    * * *   root    cd /var/www/IoT-server && node aggregator.js >/dev/null
+37 13   * * *   root    cd /var/www/IoT-server && node sendpush.js >/dev/null
 ```
 
 The second script executes once a day (at which time doesn't matter, so I put 13:37). It sends a daily summary via GCM push to all registered browsers that once connected to a raspberry.

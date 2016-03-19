@@ -113,7 +113,7 @@ gulp.task('browser-sync', function()
     {
         port: 7777,
         proxy: {
-            target: "https://d1303.de:3000",
+            target: config.url,
             ws: true
         },
         https: ssl_object

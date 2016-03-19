@@ -146,7 +146,7 @@ IoT.factory('SocketFactory', function(constant)
             //SocketFactory.socket.disconnect();
         }
 
-        SocketFactory.socket = io.connect(constant.get("serverUrl"), {
+        SocketFactory.socket = io.connect("/", {
             reconnect: true,
             query: "mode=ui&client=" + id,
             'connect timeout': 1000,
