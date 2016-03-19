@@ -28,12 +28,11 @@ var https = require('https');
 
 var privateKey = fs.readFileSync(config.sslPrivateKeyPath);
 var certificate = fs.readFileSync(config.sslCertificate);
-var ca = fs.readFileSync(config.sslCa);
+var ca = config.sslCa ? [ fs.readFileSync(config.sslCa) ] : [];
 var ssl_object = {
     key: privateKey,
-    cert: certificate,
-    ca: [ ca ] //only one cert block in chain, so that's fine. Splitting would be necessary otherwise
-};	
+    cert: certificate
+};
 
 var server = https.createServer(ssl_object, app).listen(port, function()
 {
@@ -49,34 +48,48 @@ io.use(middleware);
 function getSockets()
 {
     var sockets = io.sockets.sockets;
+    var socks = [];
 
-    return ("length" in sockets) ? sockets : [];
+    //is array
+    if ("length" in io.sockets.sockets)
+    {
+        return io.sockets.sockets;
+    }
+
+    //is object
+    Object.keys(io.sockets.sockets).forEach(function(s)
+    {
+        var sock = io.sockets.sockets[s];
+        socks.push(sock);
+    });
+
+    return socks;
 }
 
 function getSocketType(socket)
 {
-	if (socket.handshake.query.mode === "ui" && getClientId(socket))
-	{
-		return "ui";
-	}
+    if (socket.handshake.query.mode === "ui" && getClientId(socket))
+    {
+        return "ui";
+    }
 
-	if (socket.handshake.query.mode === "client" && getClientName(socket))
-	{
-		return "client";
-	}
+    if (socket.handshake.query.mode === "client" && getClientName(socket))
+    {
+        return "client";
+    }
 
-	return false;
+    return false;
 }
 
 //ui socket
 function getClientId(socket)
 {
-	if (socket.handshake.query.mode === "ui" && socket.handshake.query.client)
-	{
-		return socket.handshake.query.client;
-	}
+    if (socket.handshake.query.mode === "ui" && socket.handshake.query.client)
+    {
+        return socket.handshake.query.client;
+    }
 
-	return false;
+    return false;
 }
 
 //client socket
@@ -87,24 +100,24 @@ function getClientName(socket)
         return false;
     }
 
-	if (socket.handshake.query.mode === "client" && socket.handshake.query.client_name)
-	{
-		return socket.handshake.query.client_name;
-	}
+    if (socket.handshake.query.mode === "client" && socket.handshake.query.client_name)
+    {
+        return socket.handshake.query.client_name;
+    }
 
-	return false;
+    return false;
 }
 
 function persistClientData(msg, cb)
 {
-	//logger.info("got from client", msg);
-	
-	if (!("type" in msg) || !("data" in msg) || !("client_id" in msg) || !("created" in msg))
-	{
-		return cb("malformatted message", msg);
-	}
-		
-	var data = msg.data;
+    //logger.info("got from client", msg);
+
+    if (!("type" in msg) || !("data" in msg) || !("client_id" in msg) || !("created" in msg))
+    {
+        return cb("malformatted message", msg);
+    }
+
+    var data = msg.data;
 
     storage.persistDataPoint(msg.type, data, msg.client_id, msg.created, function(err, msg)
     {
@@ -472,23 +485,23 @@ app.post('/remotecommands/:command/:param', function(req, res)
 
 app.get('/clients/get', function(req, res)
 {
-	var clients = [];
+    var clients = [];
 
     getSockets().forEach(function(s)
-	{
-		if (getSocketType(s) === "client")
-		{
-			clients.push
-			({
-				id: s.id,
-				address: s.client.conn.remoteAddress,
-				client_name: getClientName(s),
+    {
+        if (getSocketType(s) === "client")
+        {
+            clients.push
+            ({
+                id: s.id,
+                address: s.client.conn.remoteAddress,
+                client_name: getClientName(s),
                 connected_at: s.handshake.query.connected_at
-			});
-		}
-	});
-	
-	res.end(JSON.stringify(clients));
+            });
+        }
+    });
+
+    res.end(JSON.stringify(clients));
 });
 
 //-----------------------------------------------------------------
@@ -503,15 +516,15 @@ function progressFunc(socket)
 
 io.on('connection', function(socket)
 {
-	logger.info(`new connection ${socket.id} from ${socket.client.conn.remoteAddress}`);
+    logger.info(`new connection ${socket.id} from ${socket.client.conn.remoteAddress}`);
 
-	var socketType = null;
+    var socketType = null;
 
-	switch (getSocketType(socket))
-	{
-		case "ui":
-			socketType = "ui";
-			var clientId = getClientId(socket);
+    switch (getSocketType(socket))
+    {
+        case "ui":
+            socketType = "ui";
+            var clientId = getClientId(socket);
 
             if (!clientId)
             {
@@ -520,10 +533,10 @@ io.on('connection', function(socket)
                 return;
             }
 
-			logger.info(`... is UI connection for ${clientId}`);
-			break;
-		case "client":
-			socketType = "client";
+            logger.info(`... is UI connection for ${clientId}`);
+            break;
+        case "client":
+            socketType = "client";
 
             var clientName = getClientName(socket);
 
@@ -535,19 +548,19 @@ io.on('connection', function(socket)
             }
 
             var newConnection = `... is client connection ${clientName}`;
-			logger.info(newConnection);
+            logger.info(newConnection);
             storage.logEntry("info", newConnection, clientName);
-			break;
-		default:
-			logger.error("... is invalid connection", socket.handshake);
-			socket.disconnect();
-	}
+            break;
+        default:
+            logger.error("... is invalid connection", socket.handshake);
+            socket.disconnect();
+    }
 
-	if (!socketType)
-	{
+    if (!socketType)
+    {
         socket.disconnect();
-		return;
-	}
+        return;
+    }
 
     //###########################################################################
 

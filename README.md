@@ -8,6 +8,7 @@ Home control server unit that works together with IoT-raspberry
 ### Preconditions
 
 ```
+apt-get update
 apt-get install -y build-essential git
 ```
 
@@ -55,12 +56,30 @@ Pay attention that the path, where the generated certificates end up, matches wh
 
 Can be automated by a cronjob. As the certificates are valid for 90 days currently, once per month should be good enough.
 
+***self signed?***
+
+If you want to or have to create your own ssl certificate and can't use letsencrypt, do the following:
+
+```
+mkdir /opt/keys && cd /opt/keys
+openssl genrsa -out privkey.pem 2048
+openssl req -new -key privkey.pem -out csr.pem
+openssl req -x509 -days 365 -key privkey.pem -in csr.pem -out cert.pem
+```
+
+Change the config accordingly to:
+
+```
+sslPrivateKeyPath: '/opt/keys/privkey.pem',
+sslCertificate: '/opt/keys/cert.pem',
+sslCa: false
+```
+
 ### Installing the application itself
 
 ```
 npm install -g bower gulp node-gyp
-mkdir -p /var/www/d1303.de
-cd /var/www/d1303.de
+mkdir -p /var/www/IoT-server && /var/www/IoT-server
 mkdir logs
 git clone https://github.com/d89/IoT-server.git
 cd /var/www/IoT-server
@@ -72,7 +91,7 @@ nano config.js
 
 ***Important parts of the configuration***
 
-SSL is necessary. Use letsencrypt, it's free.
+SSL is necessary (see section above).
 
 * port: The port the webserver runs on.
 * sslPrivateKeyPath: Path to your private key pem file.
