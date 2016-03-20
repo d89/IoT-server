@@ -116,6 +116,9 @@ IoT.controller('IoTVideoCtrl', function ($scope, $rootScope, $timeout, $compile,
 
             $scope.videos = videos;
             $scope.loading = false;
+
+            $scope.$apply();
+
             if (cb) cb();
         }).fail(function(err)
         {

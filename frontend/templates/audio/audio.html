@@ -59,7 +59,12 @@
     </div>
 
     <div id="audiocontainer" class="block block-opt-refresh">
-        <div class="table-responsive">
+
+        <div class="block-content block-content-full clearfix bg-white" ng-show="audios.length == 0">
+            No audio yet, try putting some audio files on your client.
+        </div>
+
+        <div class="table-responsive" ng-show="audios.length > 0">
             <table class="table table-striped table-vcenter table-hover">
                 <thead>
                 <tr>

@@ -262,7 +262,7 @@ exports.aggregateWrapper = function(dps, client_id, skipCache, cb)
     var aggregations = [];
 
     var types = Object.keys(dps);
-    var dates = dps[types[0]];
+    var dates = types.length === 0 ? [] : dps[types[0]];
 
     //logger.info("dpTemplate", dps);
 

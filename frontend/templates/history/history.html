@@ -60,6 +60,20 @@
         </div>
     </div>
 
+    <div class="row" ng-show="chartTypes.length == 0">
+        <div class="col-lg-12">
+            <!-- Main Dashboard Chart -->
+            <div class="block">
+                <div class="block-header">
+                    <h3 class="block-title">Pretty empty, hm?</h3>
+                </div>
+                <div class="block-content block-content-full bg-gray-lighter text-center">
+                    Nothing to display, try activating some sensors.
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- END Controls -->
 
     <div class="row" data-chart-type="{{ chartType.id }}" ng-repeat="chartType in chartTypes">

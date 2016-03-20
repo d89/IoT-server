@@ -125,7 +125,7 @@ IoT.controller('IoTIftttCtrl', function ($scope, $rootScope, $timeout, $compile,
 
     $scope.conditionList = function()
     {
-        //console.log("conditionlist!");
+        console.log("requesting conditionlist!");
 
         var ifttt = {
             mode: "conditionlist"

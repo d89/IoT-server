@@ -759,6 +759,8 @@ io.on('connection', function(socket)
                     request.mode = "availableoptions";
                 }
 
+                logger.info("sending ifttt request to client", request);
+
                 clientSocket.emit("ifttt", request, function(err, data)
                 {
                     //logger.info("got ifttt answer", err, data);

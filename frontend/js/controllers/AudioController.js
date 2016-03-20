@@ -92,6 +92,7 @@ IoT.controller('IoTAudioCtrl', function ($scope, $rootScope, $timeout, $compile,
                 }
 
                 $scope.audios = audios;
+                $scope.$apply();
 
                 setTimeout(function()
                 {
