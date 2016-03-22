@@ -31,3 +31,4 @@ uploads
 .htaccess
 .idea/
 config.js
+staging_dir

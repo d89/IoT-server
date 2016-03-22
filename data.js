@@ -405,17 +405,25 @@ app.post('/push', function(req, res)
 
         if (true === apiAuth(res, clientPassword, clientName, true))
         {
-            callbacks.push(function(cb)
+            console.log("adding success callback for " + clientName);
+
+            (function(c)
             {
-                storage.dailySummary(clientName, cb);
-            });
+                callbacks.push(function(cb)
+                {
+                    storage.dailySummary(c, cb);
+                });
+            }(clientName));
         }
         else
         {
-            callbacks.push(function(cb)
+            (function(c)
             {
-                return cb(null, "Invalid Password for client " + clientName);
-            });
+                callbacks.push(function(cb)
+                {
+                    cb(null, "No connection for client " + c);
+                });
+            }(clientName));
         }
     }
 
