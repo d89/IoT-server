@@ -1,4 +1,9 @@
 #!/bin/bash -e
+
+args=("$@")
+MODE=${args[0]}
+cd "$(dirname "$0")"
+
 echo "---------------------------------------------------"
 echo "remote changes"
 echo "---------------------------------------------------"
@@ -16,43 +21,54 @@ echo "---------------------------------------------------"
 git rev-list origin/develop --count
 
 echo "---------------------------------------------------"
-echo "stopping service iot-server"
+echo "changed files"
 echo "---------------------------------------------------"
-pm2 stop iot-server
+git diff --stat --no-color HEAD..origin/develop
 
-echo "---------------------------------------------------"
-echo "in directory"
-echo "---------------------------------------------------"
-pwd
+if [ "$MODE" != "--execute" ]; then
+    echo "---------------------------------------------------"
+    echo "update has NOT been performed. Use the --execute flag to do so"
+    echo "---------------------------------------------------"
+else
+    echo "---------------------------------------------------"
+    echo "stopping service iot-server"
+    echo "---------------------------------------------------"
+    pm2 stop iot-server
 
-echo "---------------------------------------------------"
-echo "deleting old staging dir"
-echo "---------------------------------------------------"
-rm -rf staging_dir
+    echo "---------------------------------------------------"
+    echo "in directory"
+    echo "---------------------------------------------------"
+    pwd
 
-echo "---------------------------------------------------"
-echo "cloning current repo"
-echo "---------------------------------------------------"
-git clone https://github.com/d89/IoT-server.git staging_dir
-chmod +x staging_dir/update
+    echo "---------------------------------------------------"
+    echo "deleting old staging dir"
+    echo "---------------------------------------------------"
+    rm -rf staging_dir
 
-echo "---------------------------------------------------"
-echo "making live"
-echo "---------------------------------------------------"
-rsync -Ea staging_dir/ .
+    echo "---------------------------------------------------"
+    echo "cloning current repo"
+    echo "---------------------------------------------------"
+    git clone https://github.com/d89/IoT-server.git staging_dir
+    chmod +x staging_dir/update
 
-echo "---------------------------------------------------"
-echo "installing node modules, assets and gulping then"
-echo "---------------------------------------------------"
-npm install
-bower install --allow-root
-gulp
+    echo "---------------------------------------------------"
+    echo "making live"
+    echo "---------------------------------------------------"
+    rsync -Ea staging_dir/ .
 
-echo "---------------------------------------------------"
-echo "restarting service iot-server"
-echo "---------------------------------------------------"
-pm2 start iot-server
+    echo "---------------------------------------------------"
+    echo "installing node modules, assets and gulping then"
+    echo "---------------------------------------------------"
+    npm install
+    bower install --allow-root
+    gulp
 
-echo "---------------------------------------------------"
-echo "update successfully done"
-echo "---------------------------------------------------"
+    echo "---------------------------------------------------"
+    echo "restarting service iot-server"
+    echo "---------------------------------------------------"
+    pm2 start iot-server
+
+    echo "---------------------------------------------------"
+    echo "update successfully done"
+    echo "---------------------------------------------------"
+fi

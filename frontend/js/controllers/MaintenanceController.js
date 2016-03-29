@@ -82,6 +82,51 @@ IoT.controller('IoTMaintenanceCtrl', function ($scope, $rootScope, $timeout, $co
         });
     };
 
+    $scope.checkUpdate = function()
+    {
+        console.log("checking for update!");
+
+        SocketFactory.send("ui:maintenance", {
+            mode: "updatechanges"
+        }, function(err, resp)
+        {
+            if (err) {
+                $scope.updateCheckText = "Error: " + err;
+            } else {
+                $scope.updateCheckText = resp;
+            }
+
+            //loaded
+            setTimeout(function()
+            {
+                $(".update.block-opt-refresh").removeClass("block-opt-refresh");
+            }, 300);
+        });
+    };
+
+    $scope.performUpdate = function()
+    {
+        if (!window.confirm("Do you really want to execute the update? Your Raspberry will disconnect and reconnect after the update."))
+        {
+            return;
+        }
+
+        $(".update").addClass("block-opt-refresh");
+
+        $scope.updateCheckText = "";
+
+        SocketFactory.send("ui:maintenance", {
+            mode: "update"
+        }, function(err, resp)
+        {
+            //should not respond, disconnect is expected
+            if (err)
+                SocketFactory.callLifecycleCallback("functional_error", "Could not execute update: " + err);
+            else
+                SocketFactory.callLifecycleCallback("functional_error", "Update responded: " + resp);
+        });
+    };
+
     $scope.getMaintenanceInfo = function()
     {
         console.log("fetching maintenance info");
@@ -154,7 +199,7 @@ IoT.controller('IoTMaintenanceCtrl', function ($scope, $rootScope, $timeout, $co
                 //loaded
                 setTimeout(function()
                 {
-                    $(".block-opt-refresh").removeClass("block-opt-refresh");
+                    $(".log.block-opt-refresh").removeClass("block-opt-refresh");
                 }, 300);
             }
             else
@@ -174,6 +219,7 @@ IoT.controller('IoTMaintenanceCtrl', function ($scope, $rootScope, $timeout, $co
         $scope.connect(false, function()
         {
             $scope.getMaintenanceInfo();
+            $scope.checkUpdate();
         });
     };
 

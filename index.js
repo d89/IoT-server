@@ -1,3 +1,6 @@
+//set correct working directory to this folder
+process.chdir(__dirname);
+//---------------------------------------------------------------------------
 var MongoClient = require('mongodb').MongoClient;
 var logger = require('./logger');
 var config = require('./config');

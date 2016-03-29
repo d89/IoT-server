@@ -78,8 +78,21 @@
                 </div>
             </div>
 
-            <!-- News -->
-            <div class="block block-opt-refresh">
+            <div class="block block-themed update block-opt-refresh">
+                <div class="block-header bg-danger">
+                     <h3 class="block-title">Update</h3>
+                </div>
+                <div class="block-content">
+                    <div class="form-group">
+                        <textarea autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" class="form-control" style="height: 350px">{{ updateCheckText }}</textarea>
+                    </div>
+                    <div class="form-group">
+                        <button ng-show="updateCheckText" ng-click="performUpdate()" class="btn btn-sm btn-danger" type="submit"><i class="fa fa-unlock push-5-r"></i> Perform Update</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="block log block-opt-refresh">
                 <div class="block-header">
                     <h3 class="block-title"> System State</h3>
                 </div>
@@ -104,7 +117,7 @@
 
         <div class="col-lg-4">
             <!-- News -->
-            <div class="block block-opt-refresh">
+            <div class="block log block-opt-refresh">
                 <div class="block-header">
                     <h3 class="block-title"> Server Log</h3>
                 </div>
@@ -130,7 +143,7 @@
         <div class="col-lg-4">
 
             <!-- News -->
-            <div class="block block-opt-refresh">
+            <div class="block log block-opt-refresh">
                 <div class="block-header">
                     <h3 class="block-title"> Client Log</h3>
                 </div>
