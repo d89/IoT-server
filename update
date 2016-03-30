@@ -2,27 +2,36 @@
 
 args=("$@")
 MODE=${args[0]}
+DATE=`date +%Y-%m-%d@%H:%M:%S`
 cd "$(dirname "$0")"
 
 echo "---------------------------------------------------"
-echo "remote changes"
+echo "Current date: $DATE"
+git fetch origin develop --quiet
+CURRENT_REV=$(git rev-list HEAD --count)
+HEAD_REV=$(git rev-list origin/develop --count)
+
 echo "---------------------------------------------------"
-git fetch origin develop
+echo "AVAILABLE REVISION: $CURRENT_REV"
+echo "INSTALLED REVISION: $HEAD_REV"
+echo "---------------------------------------------------"
+
+if [ "$CURRENT_REV" == "$HEAD_REV" ]; then
+    echo "No Update Available"
+    exit
+else
+    echo "An Update Is Available"
+fi
+
+echo "---------------------------------------------------"
+echo "UPDATES"
+echo "---------------------------------------------------"
 git log HEAD..origin/develop --format=oneline
 
 echo "---------------------------------------------------"
-echo "current revision"
+echo "CHANGED FILES"
 echo "---------------------------------------------------"
-git rev-list HEAD --count
 
-echo "---------------------------------------------------"
-echo "head revision"
-echo "---------------------------------------------------"
-git rev-list origin/develop --count
-
-echo "---------------------------------------------------"
-echo "changed files"
-echo "---------------------------------------------------"
 git --no-pager diff --stat --no-color HEAD..origin/develop
 
 if [ "$MODE" != "--execute" ]; then

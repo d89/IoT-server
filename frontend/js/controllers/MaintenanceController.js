@@ -94,6 +94,11 @@ IoT.controller('IoTMaintenanceCtrl', function ($scope, $rootScope, $timeout, $co
                 $scope.updateCheckText = "Error: " + err;
             } else {
                 $scope.updateCheckText = resp;
+
+                if ($scope.updateCheckText.indexOf("An Update Is Available") !== -1)
+                {
+                    $scope.updateAvailable = true;
+                }
             }
 
             //loaded
@@ -101,6 +106,19 @@ IoT.controller('IoTMaintenanceCtrl', function ($scope, $rootScope, $timeout, $co
             {
                 $(".update.block-opt-refresh").removeClass("block-opt-refresh");
             }, 300);
+        });
+    };
+
+    $scope.updateLog = function()
+    {
+        SocketFactory.send("ui:maintenance", {
+            mode: "updatelog"
+        }, function(err, resp)
+        {
+            if (err)
+                $scope.updateCheckText = err;
+            else
+                $scope.updateCheckText = resp;
         });
     };
 
@@ -113,7 +131,8 @@ IoT.controller('IoTMaintenanceCtrl', function ($scope, $rootScope, $timeout, $co
 
         $(".update").addClass("block-opt-refresh");
 
-        $scope.updateCheckText = "";
+        $scope.updateCheckText = "Triggering Update, please wait.";
+        $scope.updateAvailable = false;
 
         SocketFactory.send("ui:maintenance", {
             mode: "update"
