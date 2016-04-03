@@ -149,15 +149,14 @@ IoT.controller('IoTAudioCtrl', function ($scope, $rootScope, $timeout, $compile,
     $scope.checkAutoPlay = function()
     {
         var track = $routeParams.track;
-        var ytid = $routeParams.ytid;
+        var ytdl = $routeParams.ytdl;
 
-        if (ytid)
+        if (ytdl)
         {
             $scope.downloading = true;
 
             console.log("starting youtube download");
             $scope.youtubeProgressMessage("info", "Starting Youtube Download");
-            $scope.youtube(ytid);
         }
         else if (track)
         {

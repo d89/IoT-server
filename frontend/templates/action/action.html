@@ -79,7 +79,7 @@
                         <!-- special buttons -->
                         <button ng-if='actorname == "music" && methodname == "play"' class="btn btn-primary" ng-click="musicSelection()"><i class="fa fa-music"></i> Select Music</button>
                         <button ng-if='actorname == "ledstrip" && methodname == "lightshow"' class="btn btn-primary" ng-click="musicSelection()"><i class="fa fa-lightbulb-o"></i> Select Music</button>
-                        <button ng-if='actorname == "ledstrip" && methodname == "singleColor"' ng-change="colorChanged()" colorpicker="rgb" ng-model="rgbPicker" class="btn btn-primary" data-color="{{ rgbPicker }}" style="background: {{ rgbPicker }}"><i class="fa fa-lightbulb-o"></i> Pick Color</button>
+                        <button ng-if='actorname == "ledstrip" && methodname == "singleColor"' colorpicker="hex" ng-model='actors["ledstrip"]["singleColor"].params["hexcolor"].value' class="btn btn-primary" style='background: {{ actors["ledstrip"]["singleColor"].params["hexcolor"].value }}'><i class="fa fa-lightbulb-o"></i> Pick Color</button>
                     </div>
                 </div>
             </div>

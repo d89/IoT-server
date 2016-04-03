@@ -86,49 +86,6 @@ IoT.controller('IoTActionCtrl', function ($scope, $rootScope, $timeout, $compile
     };
 
     //-----------------------------------------------------
-    // color picker
-
-    $scope.setColorPickerColor = function()
-    {
-        if (!("ledstrip" in $scope.actors)) return;
-
-        var red = $scope.actors["ledstrip"]["singleColor"].params["red"].value;
-        var green = $scope.actors["ledstrip"]["singleColor"].params["green"].value;
-        var blue = $scope.actors["ledstrip"]["singleColor"].params["blue"].value;
-
-        $scope.rgbPicker = "rgb(" + [red, green, blue].join(",") + ")";
-    };
-
-    $scope.watchColorPicker = function()
-    {
-        if (!("ledstrip" in $scope.actors)) return;
-
-        var colors = [
-            'actors["ledstrip"]["singleColor"].params["red"].value',
-            'actors["ledstrip"]["singleColor"].params["green"].value',
-            'actors["ledstrip"]["singleColor"].params["blue"].value'
-        ];
-
-        colors.forEach(function(c)
-        {
-            $scope.$watch(c, function(value)
-            {
-                console.log("color changed!");
-                $scope.setColorPickerColor();
-            });
-        });
-    };
-
-    //colorpicker changed color
-    $scope.colorChanged = function()
-    {
-        var rgb = $("[data-actor='ledstrip'] [data-method='singleColor'] [data-color]").attr("data-color").match(/(\d+)/g);
-        $scope.actors["ledstrip"]["singleColor"].params["red"].value = rgb[0];
-        $scope.actors["ledstrip"]["singleColor"].params["green"].value = rgb[1];
-        $scope.actors["ledstrip"]["singleColor"].params["blue"].value = rgb[2];
-    };
-
-    //-----------------------------------------------------
     // persistence in localStorage
 
     $scope.getParamValue = function(actor, method, name)
@@ -242,7 +199,7 @@ IoT.controller('IoTActionCtrl', function ($scope, $rootScope, $timeout, $compile
 
                 if (actor === "youtubedl" && method === "download2mp3")
                 {
-                    return $location.path('/audio/' + $routeParams.client_id);
+                    return $location.path('/audio/' + $routeParams.client_id + "/youtube/download");
                 }
 
                 if (actor === "cam" && method === "record")
@@ -303,8 +260,6 @@ IoT.controller('IoTActionCtrl', function ($scope, $rootScope, $timeout, $compile
                     });
                 });
 
-                $scope.setColorPickerColor();
-                $scope.watchColorPicker();
                 console.log("ACTORS", $scope.actors);
             }
 

@@ -49,6 +49,10 @@ IoT.config(['$routeProvider', function($routeProvider)
             templateUrl: 'templates/audio/audio.html',
             controller: 'IoTAudioCtrl'
         })
+        .when('/audio/:client_id/youtube/:ytdl', {
+            templateUrl: 'templates/audio/audio.html',
+            controller: 'IoTAudioCtrl'
+        })
         .when('/ifttt/:client_id', {
             templateUrl: 'templates/ifttt/ifttt.html',
             controller: 'IoTIftttCtrl'
