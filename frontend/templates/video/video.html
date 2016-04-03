@@ -51,7 +51,10 @@
                             <button ng-click="getVideos()"><i class="fa fa-repeat"></i> Reload</button>
                         </li>
                         <li>
-                            <button ng-show="!videoActive && supportsActor.cam" class="btn btn-xs btn-primary" ng-click="video()"><i class="fa fa-video-camera"></i> Record Video</button>
+                            <button ng-show="!streamActive && supportsActor.cam" class="btn btn-xs btn-success" ng-click="startStream()"><i class="fa fa-repeat"></i> Start Stream</button>
+                        </li>
+                        <li>
+                            <button ng-show="streamActive && supportsActor.cam" class="btn btn-xs btn-danger" ng-click="stopStream()"><i class="fa fa-repeat"></i> Stop Stream</button>
                         </li>
                     </ul>
                     <h3 class="block-title">
@@ -65,8 +68,19 @@
                         <p>Loading videos ...</p>
                     </div>
 
-                    <div class="alert alert-info" ng-show="videoActive">
-                        <p>Currently recording video for {{ videoActive }}s, please wait ...</p>
+                    <div class="block-content text-white" ng-show="streamActive">
+                        <div class="row">
+                            <div class="col-sm-9 col-lg-6">
+                                <div class="block block-themed">
+                                    <div class="block-header bg-primary-light">
+                                        <h3 class="block-title">{{ streamTime }}</h3>
+                                    </div>
+                                    <div class="block-content bg-gray-light" style="text-align:center; padding-bottom: 20px;">
+                                        <img src="" id="stream" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="row" ng-show="playingVideo">

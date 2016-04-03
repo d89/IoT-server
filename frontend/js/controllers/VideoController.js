@@ -46,28 +46,58 @@ IoT.controller('IoTVideoCtrl', function ($scope, $rootScope, $timeout, $compile,
 
     //-----------------------------------------------------
 
-    $scope.video = function()
+    $scope.startStream = function()
     {
-        $scope.videoActive = constant.get("camRecordingDuration");
-
-        SocketFactory.send('ui:start-video', { duration: constant.get("camRecordingDuration") }, function(err, msg)
+        if (!("cam" in $scope.supportsActor))
         {
-            $scope.videoActive = false;
-            console.log("done recording video", err, msg);
+            return;
+        }
 
+        $scope.streamActive = true;
+        $scope.streamTime = "Initializing Camera";
+        $("#stream").attr("src", "assets/img/various/loading-cam.gif");
+
+        SocketFactory.send('ui:start-stop-stream', {
+            start: true
+        }, function(err, msg)
+        {
             if (err)
             {
-                SocketFactory.callLifecycleCallback("functional_error", "Could not record video: " + err);
-            }
-            else
-            {
-                $scope.getVideos(function()
-                {
-                    $scope.videos.length && $scope.play($scope.videos[0].fileName);
-                });
+                SocketFactory.callLifecycleCallback("functional_error", "Could not start stream: " + err);
+                $scope.streamActive = false;
+                return;
             }
         });
     };
+
+    $scope.stopStream = function()
+    {
+        if (!("cam" in $scope.supportsActor))
+        {
+            return;
+        }
+
+        console.log("stopping stream!");
+
+        $scope.streamActive = false;
+        $scope.streamTime = "Shutting Down Stream";
+
+        SocketFactory.send('ui:start-stop-stream', {
+            start: false
+        }, function(err, msg)
+        {
+            console.log("stop stream answer", err, msg);
+        });
+    };
+
+
+    //-----------------------------------------------------
+
+    $scope.$on('$routeChangeStart', function(next, current)
+    {
+        //user leaves this page - if stream is still running: stop it.
+        $scope.stopStream();
+    });
 
     $scope.play = function(videoName)
     {
@@ -139,12 +169,23 @@ IoT.controller('IoTVideoCtrl', function ($scope, $rootScope, $timeout, $compile,
         {
             $scope.getVideos(function()
             {
-                var startrecording = $routeParams.startrecording;
+                var autoplay = $routeParams.autoplay;
 
-                if (startrecording)
+                if (autoplay)
                 {
-                    $scope.video();
+                    //start video
+                    $scope.play(autoplay);
                 }
+            });
+
+            SocketFactory.receive("cam-stream", function(msg)
+            {
+                var image = msg.image;
+                var date = msg.date;
+                var now = msg.now;
+
+                $('#stream').attr('src', 'data:image/jpg;base64,' + image);
+                $scope.streamTime = "Now: " + moment(now).format("HH:mm:ss") + " | " + "Img: " + moment(date).format("HH:mm:ss");
             });
         });
     };

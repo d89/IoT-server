@@ -45,395 +45,275 @@ IoT.controller('IoTActionCtrl', function ($scope, $rootScope, $timeout, $compile
     };
 
     //-----------------------------------------------------
+    // tile colors
 
-    //from http://stackoverflow.com/questions/3452546/javascript-regex-how-to-get-youtube-video-id-from-url
-    var ytIdExtractor = function(url) {
-        var regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#\&\?]*).*/;
-        var match = url.match(regExp);
-        return (match&&match[7].length==11)? match[7] : false;
-    };
-
-    //-----------------------------------------------------
-
-    $scope.$on('$routeChangeStart', function(next, current)
+    $scope.buildColors = function()
     {
-        //user leaves this page - if stream is still running: stop it.
-        $scope.stopStream();
-    });
+        $scope.colors = {};
 
-    //-----------------------------------------------------
+        var baseStyles = ["primary", "gray", "amethyst", "city", "flat", "modern", "smooth"];
+        var suffixes = ["", "light", "dark", "darker"];
 
-    $scope.streamActive = false;
-
-    $scope.zwaveSwitch = function(state)
-    {
-        var switchName = window.prompt("Please enter the ID of the switch", "ZWave_SWITCH_BINARY_17");
-        if (!switchName) return;
-
-        var options = {
-            type: "switchzwave",
-            data: {
-                onoff: !!state,
-                switchName: switchName
-            }
-        };
-
-        SocketFactory.send("ui:action", options);
-    };
-
-    $scope.rcSwitch = function(nr, state)
-    {
-        var text = "Turning " + (state ? "on" : "off") + " rc switch " + nr;
-        console.log(text);
-
-        var rc = {
-            type:"switchrc",
-            data: {
-                switchNumber: nr,
-                onoff: state
-            }
-        };
-
-        SocketFactory.send("ui:action", rc);
-    };
-
-    $scope.volume = function()
-    {
-        var volumeSetting = localStorage.getItem("volume") || 70;
-
-        var volume = window.prompt("Please enter sound volume between 0 (silent) and 100 (loudest).", volumeSetting);
-
-        if (!volume) return;
-
-        localStorage.setItem("volume", volume);
-
-        var options = {
-            type: "volume",
-            data: volume
-        };
-
-        SocketFactory.send("ui:action", options);
-    };
-
-    $scope.volumemicrophone = function()
-    {
-        var volumeSetting = localStorage.getItem("volumemicrophone") || 100;
-
-        var volume = window.prompt("Please enter sound volume between 0 (silent) and 100 (loudest).", volumeSetting);
-
-        if (!volume) return;
-
-        localStorage.setItem("volumemicrophone", volume);
-
-        var options = {
-            type: "volumemicrophone",
-            data: volume
-        };
-
-        SocketFactory.send("ui:action", options);
-    };
-
-    $scope.servo = function(onoff)
-    {
-        onoff = !!onoff;
-
-        console.log("acting with servo ", onoff);
-
-        var servo = {
-            type: "servo",
-            data: {
-                onoff: onoff
-            }
-        };
-
-        SocketFactory.send("ui:action", servo);
-    };
-
-    $scope.stepper = function(onoff)
-    {
-        onoff = !!onoff;
-
-        console.log("acting with stepper ", onoff);
-
-        var stepper = {
-            type: "stepper",
-            data: {
-                onoff: onoff
-            }
-        };
-
-        SocketFactory.send("ui:action", stepper);
-    };
-
-    $scope.led = function(nr)
-    {
-        var ledColor = (nr == 1 ? "red" : "green");
-        console.log("enabling led " + ledColor);
-
-        var led = {
-            type: "led",
-            data: {
-                ledType: ledColor
-            }
-        };
-
-        SocketFactory.send("ui:action", led);
-    };
-
-    $scope.startStream = function()
-    {
-        $scope.streamActive = true;
-        $scope.streamTime = "Initializing Camera";
-        $("#stream").attr("src", "assets/img/various/loading-cam.gif");
-
-        SocketFactory.send('ui:start-stop-stream', {
-            start: true
-        }, function(err, msg)
+        baseStyles.forEach(function(b, idx)
         {
-            if (err)
+            $scope.colors[idx] = [];
+
+            suffixes.forEach(function(s)
             {
-                SocketFactory.callLifecycleCallback("functional_error", "Could not start stream: " + err);
-                $scope.streamActive = false;
-                return;
-            }
+                var color = b;
+                if (s) color += "-" + s;
+
+                $scope.colors[idx].push("bg-" + color)
+            });
         });
     };
 
-    $scope.music = function()
+    $scope.pickColor = function(actorname, idx)
     {
-        $location.path('/audio/' + $routeParams.client_id);
-    };
+        var firstLetter = actorname[0].toLowerCase();
+        //see http://stackoverflow.com/questions/22624379/how-to-convert-letters-to-numbers-with-javascript
+        var alphabetPosition = firstLetter.charCodeAt(0) - 97;
+        var colorgroup = alphabetPosition % Object.keys($scope.colors).length;
 
-    $scope.playMusic = function(fileName)
-    {
-        var options = {
-            type: "music",
-            data: fileName
-        };
-
-        SocketFactory.send("ui:action", options);
-    };
-
-    $scope.lightshowSynchronize = function()
-    {
-        var options = {
-            type: "ledstrip",
-            data: {
-                mode: "lightshow",
-                style: "linein"
-            }
-        };
-
-        SocketFactory.send("ui:action", options);
-    };
-
-    $scope.playLightshow = function(fileName)
-    {
-        var options = {
-            type: "ledstrip",
-            data: {
-                mode: "lightshow",
-                style: "music",
-                file: fileName
-            }
-        };
-
-        SocketFactory.send("ui:action", options);
-    };
-
-    $scope.stopMusic = function()
-    {
-        var options = {
-            type: "music",
-            data: false
-        };
-
-        SocketFactory.send("ui:action", options);
-    };
-
-    $scope.voice = function()
-    {
-        var res = window.prompt("Please enter the text to be spoken out loud.", "Hello, dude!");
-        if (!res) return;
-
-        var options = {
-            type: "voice",
-            data: res
-        };
-
-        SocketFactory.send("ui:action", options);
-    };
-
-    $scope.startRecording = function()
-    {
-        var maxLength = window.prompt("Please enter the duration in seconds you want to record.", 8);
-
-        if (!maxLength) return;
-
-        $scope.isRecording = true;
-
-        var recording = {
-            type: "record",
-            data: {
-                mode: "start",
-                maxLength: maxLength
-            }
-        };
-
-        SocketFactory.send("ui:action", recording, function(err, title)
+        if ($scope.colors[colorgroup].length <= idx)
         {
-            $scope.isRecording = false;
+            idx -= ($scope.colors[colorgroup].length);
+        }
 
-            if (err)
+        var color = $scope.colors[colorgroup][idx];
+
+        return color;
+    };
+
+    //-----------------------------------------------------
+    // color picker
+
+    $scope.setColorPickerColor = function()
+    {
+        if (!("ledstrip" in $scope.actors)) return;
+
+        var red = $scope.actors["ledstrip"]["singleColor"].params["red"].value;
+        var green = $scope.actors["ledstrip"]["singleColor"].params["green"].value;
+        var blue = $scope.actors["ledstrip"]["singleColor"].params["blue"].value;
+
+        $scope.rgbPicker = "rgb(" + [red, green, blue].join(",") + ")";
+    };
+
+    $scope.watchColorPicker = function()
+    {
+        if (!("ledstrip" in $scope.actors)) return;
+
+        var colors = [
+            'actors["ledstrip"]["singleColor"].params["red"].value',
+            'actors["ledstrip"]["singleColor"].params["green"].value',
+            'actors["ledstrip"]["singleColor"].params["blue"].value'
+        ];
+
+        colors.forEach(function(c)
+        {
+            $scope.$watch(c, function(value)
             {
-                SocketFactory.callLifecycleCallback("functional_error", "Could not record audio: " + err);
-            }
-            else
-            {
-                console.info("finished recording title", title);
-                $location.path('/audio/' + $routeParams.client_id + '/autoplay/' + title);
-            }
+                console.log("color changed!");
+                $scope.setColorPickerColor();
+            });
         });
     };
 
-    $scope.zwaveTemp = function()
+    //colorpicker changed color
+    $scope.colorChanged = function()
     {
-        var thermostat = window.prompt("Please enter the ID of the thermostat", "ZWave_THERMOSTAT_11");
-        if (!thermostat) return;
-
-        var temp = window.prompt("Please enter the desired temperature", "26");
-        if (!temp) return;
-
-        var options = {
-            type: "settemperature",
-            data: {
-                type: "zwave",
-                temp: temp,
-                thermostat: thermostat
-            }
-        };
-
-        SocketFactory.send("ui:action", options);
+        var rgb = $("[data-actor='ledstrip'] [data-method='singleColor'] [data-color]").attr("data-color").match(/(\d+)/g);
+        $scope.actors["ledstrip"]["singleColor"].params["red"].value = rgb[0];
+        $scope.actors["ledstrip"]["singleColor"].params["green"].value = rgb[1];
+        $scope.actors["ledstrip"]["singleColor"].params["blue"].value = rgb[2];
     };
 
-    $scope.homematicTemp = function()
+    //-----------------------------------------------------
+    // persistence in localStorage
+
+    $scope.getParamValue = function(actor, method, name)
     {
-        var thermostat = window.prompt("Please enter the ID of the thermostat", "HM_37F678");
-        if (!thermostat) return;
+        var params = $scope.getParamStorage();
 
-        var temp = window.prompt("Please enter the desired temperature", "26");
-        if (!temp) return;
+        if (actor in params && method in params[actor] && name in params[actor][method])
+        {
+            return params[actor][method][name];
+        }
 
-        var options = {
-            type: "settemperature",
-            data: {
-                type: "homematic",
-                temp: temp,
-                thermostat: thermostat
-            }
-        };
-
-        SocketFactory.send("ui:action", options);
+        return "";
     };
 
-    $scope.stopStream = function()
+    $scope.getParamStorage = function()
     {
-        if (!("cam" in $scope.supportsActor))
+        var paramStorage = {};
+
+        try {
+            paramStorage = JSON.parse(localStorage.getItem("paramStorage") || "{}");
+        } catch (err) {
+            paramStorage = {};
+        }
+
+        return paramStorage;
+    };
+
+    $scope.setParamStorage = function(paramStorage)
+    {
+        localStorage.setItem("paramStorage", JSON.stringify(paramStorage));
+    };
+
+    //-----------------------------------------------------
+    // logic
+
+    $scope.execute = function(actor, method)
+    {
+        var isValid = true;
+        var paramStorage = $scope.getParamStorage();
+        var availableParams = $scope.actors[actor][method].params;
+        var params = [];
+
+        Object.keys(availableParams).forEach(function(paramName)
+        {
+            var val = availableParams[paramName].value;
+            var isRequired = !availableParams[paramName].options.isOptional;
+
+            availableParams[paramName].hasError = false;
+
+            if (val.length === 0 && isRequired)
+            {
+                isValid = false;
+                availableParams[paramName].hasError = true;
+            }
+
+            if (!(actor in paramStorage))
+            {
+                paramStorage[actor] = {};
+            }
+
+            if (!(method in paramStorage[actor]))
+            {
+                paramStorage[actor][method] = {};
+            }
+
+            paramStorage[actor][method][paramName] = val;
+            params.push(val);
+        });
+
+        $scope.setParamStorage(paramStorage);
+
+        if (!isValid)
         {
             return;
         }
 
-        console.log("stopping stream!");
+        var execute = {
+            actor: actor,
+            method: method,
+            params: params
+        };
 
-        $scope.streamActive = false;
-        $scope.streamTime = "Shutting Down Stream";
+        console.log("EXECUTING", execute);
 
-        SocketFactory.send('ui:start-stop-stream', {
-            start: false
-        }, function(err, msg)
+        $scope.actors[actor][method].execution = {
+            state: true,
+            message: "executed"
+        };
+
+        SocketFactory.send("ui:execute-actor", execute, function(err, msg)
         {
-            console.log("stop stream answer", err, msg);
+            if (err)
+            {
+                $scope.actors[actor][method].execution = {
+                    state: false,
+                    message: err
+                };
+            }
+            else
+            {
+                console.log("got message", msg);
+
+                msg = msg || "no answer from server";
+
+                //special treatment section -----------------------------------------
+                if (actor === "recorder" && method === "record")
+                {
+                    var soundfile = msg.split("/").pop();
+                    return $location.path('/audio/' + $routeParams.client_id + '/autoplay/' + soundfile);
+                }
+
+                if (actor === "youtubedl" && method === "download2mp3")
+                {
+                    return $location.path('/audio/' + $routeParams.client_id);
+                }
+
+                if (actor === "cam" && method === "record")
+                {
+                    var videoname = msg.split(".")[0];
+                    return $location.path('/video/' + $routeParams.client_id + '/autoplay/' + videoname);
+                }
+                //--------------------------------------------------------------------
+
+                $scope.actors[actor][method].execution = {
+                    state: true,
+                    message: msg
+                };
+            }
         });
     };
 
-    $scope.singleColor = function(red, green, blue)
+    $scope.loadActors = function(onloaded)
     {
-        console.log("sending color", red, green, blue);
-        
-        var options = {
-            type: "ledstrip",
-            data: {
-                mode: "singleColor",
-                colors: {
-                    red: red,
-                    green: green,
-                    blue: blue
-                }
-            }
+        //console.log("available options!");
+
+        var ifttt = {
+            mode: "availableoptions"
         };
 
-        SocketFactory.send("ui:action", options);
-    };
-
-    $scope.colorParty = function()
-    {
-        var options = {
-            type: "ledstrip",
-            data: {
-                mode: "colorParty"
-            }
-        };
-
-        SocketFactory.send("ui:action", options);
-    };
-
-    $scope.allOff = function()
-    {
-        var options = {
-            type: "ledstrip",
-            data: {
-                mode: "allOff"
-            }
-        };
-
-        SocketFactory.send("ui:action", options);
-    };
-
-    $scope.randomColor = function()
-    {
-        var options = {
-            type: "ledstrip",
-            data: {
-                mode: "randomColor"
-            }
-        };
-
-        SocketFactory.send("ui:action", options);
-    };
-
-    $scope.lightshow = function()
-    {
-        $location.path('/audio/' + $routeParams.client_id);
-    };
-
-    $scope.video = function()
-    {
-        $location.path('/video/' + $routeParams.client_id + "/startrecording/1");
-    };
-
-    $scope.camera = function(state)
-    {
-        console.log("activating camera: " + state);
-
-        if (!state)
+        SocketFactory.send("ui:ifttt", ifttt, function(err, opts)
         {
-            $scope.stopStream();
-        }
-        else
-        {
-            $scope.startStream();
-        }
+            //console.log("got available options response", err, opts);
+
+            if (err)
+            {
+                SocketFactory.callLifecycleCallback("functional_error", "Could not load actors: " + err);
+            }
+            else
+            {
+                console.log("the options", opts);
+
+                $scope.actors = {};
+
+                opts.actors.forEach(function(actor)
+                {
+                    $scope.actors[actor.name] = {};
+
+                    actor.methods.forEach(function(method)
+                    {
+                        $scope.actors[actor.name][method.name] = {
+                            params: {},
+                            execution: {}
+                        };
+
+                        method.params.forEach(function(param)
+                        {
+                            $scope.actors[actor.name][method.name].params[param.name] = {
+                                options: param,
+                                value: $scope.getParamValue(actor.name, method.name, param.name)
+                            }
+                        });
+                    });
+                });
+
+                $scope.setColorPickerColor();
+                $scope.watchColorPicker();
+                console.log("ACTORS", $scope.actors);
+            }
+
+            onloaded();
+        });
     };
+
+    //-----------------------------------------------------
+    // init code
 
     $scope.checkAutoPlay = function()
     {
@@ -442,100 +322,48 @@ IoT.controller('IoTActionCtrl', function ($scope, $rootScope, $timeout, $compile
 
         if (audio || lightshow)
         {
-            if (audio) {
-                $scope.playMusic(audio);
-            } else {
-                $scope.playLightshow(lightshow);
-            }
-
-            setTimeout(function()
+            if (audio)
             {
-                var element = audio ? $("#music") : $("#lightshow");
-                Styles.hightlightScroll(element);
-            }, 500);
+                setTimeout(function()
+                {
+                    var element = $("[data-actor='music'] [data-method='play']");
+                    Styles.hightlightScroll(element);
+                    $scope.actors["music"]["play"].params["title"].value = audio;
+                    $scope.execute("music", "play");
+                }, 500);
+
+            } else {
+                setTimeout(function()
+                {
+                    var element = $("[data-actor='ledstrip'] [data-method='lightshow']");
+                    Styles.hightlightScroll(element);
+                    $scope.actors["ledstrip"]["lightshow"].params["title"].value = lightshow;
+                    $scope.execute("ledstrip", "lightshow");
+                }, 500);
+            }
         }
     };
 
-    $scope.youtube = function()
+    $scope.musicSelection = function()
     {
-        var url = window.prompt("Enter full youtube link of the video to be downloaded as .mp3 file", "https://www.youtube.com/watch?v=DLzxrzFCyOs");
-
-        if (!url) return;
-
-        var ytid = ytIdExtractor(url);
-
-        if (!ytid) return;
-
-        $location.path('/audio/' + $routeParams.client_id + "/youtube-download/" + ytid);
+        $location.path('/audio/' + $routeParams.client_id);
     };
-
-    //-----------------------------------------------------
 
     $scope.init = function()
     {
         $rootScope.mainHeadline = "IoT Portal: Actions";
         $rootScope.subHeadline = "Trigger Actions On Your IoT device";
 
-        var randomColor = function()
-        {
-            var min = 0;
-            var max = 255;
-            return Math.floor(Math.random()*(max-min+1)+min);
-        };
-
-        var color = [randomColor(), randomColor(), randomColor()].join(",");
-
-        $scope.rgbPicker = "rgb(" + color + ")";
-
-        /*
-        //alternatively: much faster, but tends to overflow
-        $scope.$watch('rgbPicker', function() {
-            var rgb = $scope.rgbPicker.match(/(\d+)/g);
-            $scope.singleColor(rgb[0], rgb[1], rgb[2]);
-        });
-        */
-
-        $scope.$on('colorpicker-selected', function(event, colorObject)
-        {
-            //alternatively use this, but not always accurate
-            //var rgb = colorObject.value.match(/(\d+)/g);
-            setTimeout(function()
-            {
-                var rgb = $scope.rgbPicker.match(/(\d+)/g);
-                $scope.singleColor(rgb[0], rgb[1], rgb[2]);
-            }, 100);
-        });
-
         $scope.connect(false, function()
         {
-            $scope.checkAutoPlay();
-
-            SocketFactory.receive("cam-stream", function(msg)
+            $scope.buildColors();
+            $scope.loadActors(function()
             {
-                var image = msg.image;
-                var date = msg.date;
-                var now = msg.now;
-
-                $('#stream').attr('src', 'data:image/jpg;base64,' + image);
-                $scope.streamTime = "Now: " + moment(now).format("HH:mm:ss") + " | " + "Img: " + moment(date).format("HH:mm:ss");
+                $scope.loaded = true;
+                $scope.$apply();
+                $scope.checkAutoPlay();
             });
         });
-    };
-
-    $scope.relais = function(onoff)
-    {
-        onoff = !!onoff;
-
-        console.log("acting with relais ", onoff);
-
-        var relais = {
-            type: "relais",
-            data: {
-                onoff: onoff
-            }
-        };
-
-        SocketFactory.send("ui:action", relais);
     };
 
     //-----------------------------------------------------

@@ -37,15 +37,11 @@ IoT.config(['$routeProvider', function($routeProvider)
             templateUrl: 'templates/video/video.html',
             controller: 'IoTVideoCtrl'
         })
-        .when('/video/:client_id/startrecording/:startrecording', {
+        .when('/video/:client_id/autoplay/:autoplay', {
             templateUrl: 'templates/video/video.html',
             controller: 'IoTVideoCtrl'
         })
         .when('/audio/:client_id', {
-            templateUrl: 'templates/audio/audio.html',
-            controller: 'IoTAudioCtrl'
-        })
-        .when('/audio/:client_id/youtube-download/:ytid', {
             templateUrl: 'templates/audio/audio.html',
             controller: 'IoTAudioCtrl'
         })
@@ -64,4 +60,10 @@ IoT.config(['$routeProvider', function($routeProvider)
         .otherwise({
             redirectTo: '/index'
         });
+}]);
+
+IoT.filter('isEmpty', [function() {
+    return function(object) {
+        return angular.equals({}, object);
+    }
 }]);

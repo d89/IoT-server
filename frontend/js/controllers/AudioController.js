@@ -103,16 +103,6 @@ IoT.controller('IoTAudioCtrl', function ($scope, $rootScope, $timeout, $compile,
         });
     };
 
-    $scope.youtube = function(ytid)
-    {
-        var options = {
-            type: "youtube",
-            data: ytid
-        };
-
-        SocketFactory.send("ui:action", options);
-    };
-
     $scope.youtubeProgress = function(msg)
     {
         if (msg.output)

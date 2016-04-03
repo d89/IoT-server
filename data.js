@@ -706,13 +706,14 @@ io.on('connection', function(socket)
                 });
             },
             //-------------------------------------------------------------------------------------
-            'ui:action': function (clientSocket, msg, cb) {
+            'ui:execute-actor': function (clientSocket, msg, cb) {
                 var request = {
-                    type: msg.type,
-                    data: msg.data
+                    actor: msg.actor,
+                    method: msg.method,
+                    params: msg.params
                 };
 
-                clientSocket.emit("actionrequest", request, cb);
+                clientSocket.emit("execute-actor", request, cb);
             },
             //-------------------------------------------------------------------------------------
             'ui:maintenance': function (clientSocket, msg, resp) {

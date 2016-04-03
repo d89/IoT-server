@@ -1194,7 +1194,6 @@ var Styles = function() {
         scrollToContentOnMobile: function()
         {
             var $windowW = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
-
             if ($windowW >= 991 || $("#templateContent").length === 0) return;
 
             $('html, body').animate({
