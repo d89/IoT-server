@@ -106,7 +106,7 @@ exports.pushMessage = function(GCM_API_KEY, REQ_TOKENS, cb)
 
     var message = new gcm.Message({
         priority: 'high',
-        contentAvailable: true,
+        //contentAvailable: true,
         timeToLive: 3,
         data: {
             key1: 'message1'

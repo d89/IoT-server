@@ -442,59 +442,6 @@ app.post('/push', function(req, res)
     });
 });
 
-app.post('/remotecommands/:command/:param', function(req, res)
-{
-    var command = req.params.command;
-    var param = req.params.param;
-    var clientName = req.body.client;
-    var password = req.body.password;
-    var clientSocket = getClientSocketByClientName(req.body.client);
-
-    if (!command || !clientSocket)
-    {
-        logger.error("invalid remotecommand for " + command, req.body);
-        return res.end("invalid");
-    }
-
-    //password
-    if (true !== apiAuth(res, password, clientName))
-    {
-        return logger.error("remotecommand: invalid password for " + clientName);
-    }
-
-    if (command === "rcswitch")
-    {
-        logger.info(`Valid request "${command}" for client "${req.body.client}" - ID = ${clientSocket.id}`, "param:", param);
-
-        var request = {
-            type: "switchrc",
-            data: {
-                switchNumber: 1,
-                onoff: (parseInt(param, 10) ? 1 : 0)
-            }
-        };
-
-        clientSocket.emit("actionrequest", request);
-
-        return res.end("command succeeded");
-    }
-
-    if (command === "restartshutdown")
-    {
-        logger.info(`Valid request "${command}" for client "${req.body.client}" - ID = ${clientSocket.id}`, "param:", param);
-
-        var request = {
-            mode: param === "shutdown" ? "shutdown" : "restart"
-        };
-
-        clientSocket.emit("maintenance", request);
-
-        return res.end("command succeeded");
-    }
-
-    return res.end("invalid command type");
-});
-
 app.get('/clients/get', function(req, res)
 {
     var clients = [];
@@ -525,6 +472,274 @@ function progressFunc(socket)
         socket.emit('progress', { progress: progress });
     }
 }
+
+var uiLayer =
+{
+    'ui:get-socket-info': function (clientSocket, msg, resp) {
+        logger.info("getting client socket info");
+
+        var capabilities = JSON.parse(clientSocket.handshake.query.capabilities) || [];
+
+        resp(null, {
+            capabilities: capabilities,
+            client_name: clientSocket.handshake.query.client_name,
+            connected_at: clientSocket.handshake.query.connected_at
+        });
+    },
+    //-------------------------------------------------------------------------------------
+    'ui:maintenance-info': function (clientSocket, msg, resp) {
+        //logger.info("getting system maintenance info");
+
+        var client_id = getClientName(clientSocket);
+
+        return maintenance.info(client_id, function (err, infotext, syslogEntries)
+        {
+            var errResponse = function (err) {
+                logger.error(err);
+                return resp(err);
+            };
+
+            if (err) {
+                return errResponse(err);
+            }
+
+            var data = {
+                start: msg.start
+            };
+
+            var request = {
+                mode: "log"
+            };
+
+            clientSocket.emit("maintenance", request, function (err, logResponse) {
+                if (err) {
+                    return errResponse(err);
+                }
+
+                return resp(err, infotext, syslogEntries, logResponse);
+            });
+        });
+    },
+    //-------------------------------------------------------------------------------------
+    'ui:data-count': function (clientSocket, msg, resp) {
+        logger.info("getting data count");
+
+        var client_id = getClientName(clientSocket);
+
+        storage.getLastCount(client_id, function (err, count) {
+            logger.info("responding to data count " + count);
+            resp(err, count);
+        })
+    },
+    //-------------------------------------------------------------------------------------
+    'ui:start-stop-stream': function (clientSocket, msg, resp) {
+        logger.info("ui request to start/stop streaming", msg);
+
+        //start or stop stream?
+        var data = {
+            start: msg.start
+        };
+
+        clientSocket.emit('start-stop-stream', data, resp);
+    },
+    //-------------------------------------------------------------------------------------
+    'ui:start-video':  function (clientSocket, msg, cb) {
+        logger.info("ui request to start recording for " + msg.duration + "s!", msg);
+
+        var data = {
+            duration: msg.duration
+        };
+
+        clientSocket.emit('start-video', data, cb);
+    },
+    //-------------------------------------------------------------------------------------
+    'ui:full': function (clientSocket, msg, resp) {
+        //logger.info("full request from ui: ", msg);
+
+        var type = msg.type;
+
+        var client_id = getClientName(clientSocket);
+
+        storage.getDataPoints(type, client_id, function (err, data) {
+            if (err) {
+                logger.error("could not get data points", err);
+                return resp(err);
+            }
+
+            //logger.info("data", data);
+
+            var datapoints = [];
+
+            for (var i = 0; i < data.length; i++) {
+                datapoints.push({
+                    id: data[i]._id,
+                    data: data[i].data,
+                    type: data[i].type,
+                    created: data[i].created
+                });
+            }
+
+            resp(null, datapoints);
+        });
+    },
+    //-------------------------------------------------------------------------------------
+    'ui:aggregation': function (clientSocket, query, resp) {
+        var start = moment(query.start);
+        var end = moment(query.end);
+        var interval = query.interval;
+        var skipcache = query.skipcache;
+
+        logger.info("aggregation request from ui from " + start + " to " + end + " in interval", interval);
+
+        var client_id = getClientName(clientSocket);
+
+        var client_capabilities = JSON.parse(clientSocket.handshake.query.capabilities) || [];
+
+        storage.aggregation(start, end, interval, client_capabilities.sensors, client_id, skipcache, progressFunc(socket), function (err, dps) {
+            //logger.info("responding to last hour request", dps);
+            resp(null, dps);
+        });
+    },
+    //-------------------------------------------------------------------------------------
+    'ui:execute-actor': function (clientSocket, msg, cb) {
+        var request = {
+            actor: msg.actor,
+            method: msg.method,
+            params: msg.params || []
+        };
+
+        clientSocket.emit("execute-actor", request, cb);
+    },
+    //-------------------------------------------------------------------------------------
+    'ui:maintenance': function (clientSocket, msg, resp) {
+        clientSocket.emit("maintenance", msg, resp);
+    },
+    //-------------------------------------------------------------------------------------
+    'ui:audio': function (clientSocket, msg, resp) {
+
+        if (msg.mode === "list")
+        {
+            clientSocket.emit("audio", { mode: "list" }, resp);
+        }
+        else if (msg.mode === "delete")
+        {
+            clientSocket.emit("audio", { mode: "delete", file: msg.file }, resp);
+        }
+    },
+    //-------------------------------------------------------------------------------------
+    'ui:ifttt': function (clientSocket, msg, resp) {
+
+        var request = {};
+
+        if (msg.mode === "conditionlist")
+        {
+            request.mode = "conditionlist";
+        }
+        else if (msg.mode === "testconditions")
+        {
+            request.mode = "testconditions";
+            request.testconditions = msg.testconditions;
+        }
+        else if (msg.mode === "saveconditions")
+        {
+            request.mode = "saveconditions";
+            var conds = [];
+
+            msg.conditions.forEach(function(c)
+            {
+                conds.push({
+                    isActive: c.isActive,
+                    conditiontext: c.conditiontext,
+                    id: c.id
+                });
+            });
+
+            request.conditions = conds;
+
+            logger.info("setting conditions", request.conditions);
+        }
+        else if (msg.mode == "availableoptions")
+        {
+            request.mode = "availableoptions";
+        }
+
+        logger.info("sending ifttt request to client", request);
+
+        clientSocket.emit("ifttt", request, function(err, data)
+        {
+            //logger.info("got ifttt answer", err, data);
+            resp(err, data);
+        });
+    }
+};
+
+app.post('/api/:client?/:command?', function(req, res)
+{
+    var client = req.params.client;
+
+    if (!client)
+    {
+        return res.status(404).end("invalid api request, missing client name.");
+    }
+
+    var command = req.params.command;
+
+    if (!command)
+    {
+        return res.status(404).end("invalid api request, missing command.");
+    }
+
+    var clientSocket = getClientSocketByClientName(client);
+
+    if (!clientSocket)
+    {
+        return res.status(404).end("client " + client + " not found.");
+    }
+
+    var password = crypto.createHash('sha512').update(req.body.password).digest('hex');
+
+    if (true !== apiAuth(res, password, client))
+    {
+        return logger.error("invalid password for " + client);
+    }
+
+    if (!(command in uiLayer))
+    {
+        return res.status(404).end("unknown command " + command);
+    }
+
+    var params = req.body;
+
+    uiLayer[command](clientSocket, params, function(err, resp)
+    {
+        console.log("got", err, resp);
+
+        if (err)
+        {
+            if (typeof err == "object")
+            {
+                try {
+                    err = JSON.stringify(err, null, 4);
+                } catch (e) {}
+            }
+
+            err = err.toString();
+
+            return res.status(400).end(err);
+        }
+
+        if (typeof resp == "object")
+        {
+            try {
+                resp = JSON.stringify(resp, null, 4);
+            } catch (e) {}
+        }
+
+        resp = resp.toString();
+
+        return res.status(200).end(resp);
+    });
+});
 
 io.on('connection', function(socket)
 {
@@ -578,206 +793,6 @@ io.on('connection', function(socket)
 
     socketType === "ui" && socket.on('*', function(msg)
     {
-        var ui =
-        {
-            'ui:get-socket-info': function (clientSocket, msg, resp) {
-                logger.info("getting client socket info");
-
-                var capabilities = JSON.parse(clientSocket.handshake.query.capabilities) || [];
-
-                resp(null, {
-                    capabilities: capabilities,
-                    client_name: clientSocket.handshake.query.client_name,
-                    connected_at: clientSocket.handshake.query.connected_at
-                });
-            },
-            //-------------------------------------------------------------------------------------
-            'ui:maintenance-info': function (clientSocket, msg, resp) {
-                //logger.info("getting system maintenance info");
-
-                var client_id = getClientName(clientSocket);
-
-                return maintenance.info(client_id, function (err, infotext, syslogEntries)
-                {
-                    var errResponse = function (err) {
-                        logger.error(err);
-                        return resp(err);
-                    };
-
-                    if (err) {
-                        return errResponse(err);
-                    }
-
-                    var data = {
-                        start: msg.start
-                    };
-
-                    var request = {
-                        mode: "log"
-                    };
-
-                    clientSocket.emit("maintenance", request, function (err, logResponse) {
-                        if (err) {
-                            return errResponse(err);
-                        }
-
-                        return resp(err, infotext, syslogEntries, logResponse);
-                    });
-                });
-            },
-            //-------------------------------------------------------------------------------------
-            'ui:data-count': function (clientSocket, msg, resp) {
-                logger.info("getting data count");
-
-                var client_id = getClientName(clientSocket);
-
-                storage.getLastCount(client_id, function (err, count) {
-                    logger.info("responding to data count " + count);
-                    resp(err, count);
-                })
-            },
-            //-------------------------------------------------------------------------------------
-            'ui:start-stop-stream': function (clientSocket, msg, resp) {
-                logger.info("ui request to start/stop streaming", msg);
-
-                //start or stop stream?
-                var data = {
-                    start: msg.start
-                };
-
-                clientSocket.emit('start-stop-stream', data, resp);
-            },
-            //-------------------------------------------------------------------------------------
-            'ui:start-video':  function (clientSocket, msg, cb) {
-                logger.info("ui request to start recording for " + msg.duration + "s!", msg);
-
-                var data = {
-                    duration: msg.duration
-                };
-
-                clientSocket.emit('start-video', data, cb);
-            },
-            //-------------------------------------------------------------------------------------
-            'ui:full': function (clientSocket, msg, resp) {
-                //logger.info("full request from ui: ", msg);
-
-                var type = msg.type;
-
-                var client_id = getClientName(clientSocket);
-
-                storage.getDataPoints(type, client_id, function (err, data) {
-                    if (err) {
-                        logger.error("could not get data points", err);
-                        return resp(err);
-                    }
-
-                    //logger.info("data", data);
-
-                    var datapoints = [];
-
-                    for (var i = 0; i < data.length; i++) {
-                        datapoints.push({
-                            id: data[i]._id,
-                            data: data[i].data,
-                            type: data[i].type,
-                            created: data[i].created
-                        });
-                    }
-
-                    resp(null, datapoints);
-                });
-            },
-            //-------------------------------------------------------------------------------------
-            'ui:aggregation': function (clientSocket, query, resp) {
-                var start = moment(query.start);
-                var end = moment(query.end);
-                var interval = query.interval;
-                var skipcache = query.skipcache;
-
-                logger.info("aggregation request from ui from " + start + " to " + end + " in interval", interval);
-
-                var client_id = getClientName(clientSocket);
-
-                var client_capabilities = JSON.parse(clientSocket.handshake.query.capabilities) || [];
-
-                storage.aggregation(start, end, interval, client_capabilities.sensors, client_id, skipcache, progressFunc(socket), function (err, dps) {
-                    //logger.info("responding to last hour request", dps);
-                    resp(null, dps);
-                });
-            },
-            //-------------------------------------------------------------------------------------
-            'ui:execute-actor': function (clientSocket, msg, cb) {
-                var request = {
-                    actor: msg.actor,
-                    method: msg.method,
-                    params: msg.params
-                };
-
-                clientSocket.emit("execute-actor", request, cb);
-            },
-            //-------------------------------------------------------------------------------------
-            'ui:maintenance': function (clientSocket, msg, resp) {
-                clientSocket.emit("maintenance", msg, resp);
-            },
-            //-------------------------------------------------------------------------------------
-            'ui:audio': function (clientSocket, msg, resp) {
-
-                if (msg.mode === "list")
-                {
-                    clientSocket.emit("audio", { mode: "list" }, resp);
-                }
-                else if (msg.mode === "delete")
-                {
-                    clientSocket.emit("audio", { mode: "delete", file: msg.file }, resp);
-                }
-            },
-            //-------------------------------------------------------------------------------------
-            'ui:ifttt': function (clientSocket, msg, resp) {
-
-                var request = {};
-
-                if (msg.mode === "conditionlist")
-                {
-                    request.mode = "conditionlist";
-                }
-                else if (msg.mode === "testconditions")
-                {
-                    request.mode = "testconditions";
-                    request.testconditions = msg.testconditions;
-                }
-                else if (msg.mode === "saveconditions")
-                {
-                    request.mode = "saveconditions";
-                    var conds = [];
-
-                    msg.conditions.forEach(function(c)
-                    {
-                        conds.push({
-                            isActive: c.isActive,
-                            conditiontext: c.conditiontext,
-                            id: c.id
-                        });
-                    });
-
-                    request.conditions = conds;
-
-                    logger.info("setting conditions", request.conditions);
-                }
-                else if (msg.mode == "availableoptions")
-                {
-                    request.mode = "availableoptions";
-                }
-
-                logger.info("sending ifttt request to client", request);
-
-                clientSocket.emit("ifttt", request, function(err, data)
-                {
-                    //logger.info("got ifttt answer", err, data);
-                    resp(err, data);
-                });
-            }
-        };
-
         //-------------------------------------------------------------------------------------
 
         var eventType = msg.data[0];
@@ -804,7 +819,7 @@ io.on('connection', function(socket)
             return;
         }
 
-        ui[eventType](resp.socket, payload, respFunc);
+        uiLayer[eventType](resp.socket, payload, respFunc);
     });
 
     //###########################################################################
