@@ -179,15 +179,15 @@ IoT.controller('IoTActionCtrl', function ($scope, $rootScope, $timeout, $compile
         {
             if (err)
             {
-                var msg = "invalid error from server: " + data;
+                var msg = "invalid error from server: " + err;
 
-                if ("error" in data) {
-                    msg = data.error;
+                if ("error" in err) {
+                    msg = err.error;
                 }
 
                 $scope.actors[actor][method].execution = {
                     state: false,
-                    message: err
+                    message: msg
                 };
             }
             else
