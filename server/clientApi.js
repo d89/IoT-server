@@ -1,5 +1,6 @@
 var sockethelper = require('./sockethelper');
 var storage = require('./storage');
+var logger = require('./logger');
 
 var clientApi =
 {
