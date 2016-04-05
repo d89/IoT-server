@@ -2,7 +2,6 @@ var fs = require("fs");
 var glob = require("glob");
 var config = require("./config");
 var logger = require("./logger");
-var spawn = require('child_process').spawn;
 const MAX_KEEP_FILES = 5;
 
 exports.moveVideo = function(inputFile, targetName, cb)

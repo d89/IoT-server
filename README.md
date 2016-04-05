@@ -122,7 +122,7 @@ For a more sophisticated operation, use a launch script.
 
 ```
 npm install -g pm2
-cd /var/www/IoT-server && pm2 start index.js --name iot-server && pm2 startup
+cd /var/www/IoT-server/server && pm2 start index.js --name iot-server && pm2 startup
 ```
 
 ***restart service***
@@ -151,8 +151,8 @@ Without data point aggregation, your mongodb database will fairly quick overflow
 Add this to your ```/etc/crontab```
 
 ```
-0  *    * * *   root    cd /var/www/IoT-server && node aggregator.js >/dev/null
-37 13   * * *   root    cd /var/www/IoT-server && node sendpush.js >/dev/null
+0  *    * * *   root    cd /var/www/IoT-server/server && node aggregator.js >/dev/null
+37 13   * * *   root    cd /var/www/IoT-server/server && node sendpush.js >/dev/null
 ```
 
 The second script executes once a day (at which time doesn't matter, so I put 13:37). It sends a daily summary via GCM push to all registered browsers that once connected to a raspberry.

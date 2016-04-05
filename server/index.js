@@ -14,5 +14,5 @@ MongoClient.connect(config.dsn, function(err, database)
     var storage = require("./storage");
     storage.setDatabase(database);
 
-    require("./data");
+    require("./bindings");
 });
