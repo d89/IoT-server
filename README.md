@@ -9,7 +9,7 @@ Home control server unit that works together with IoT-raspberry
 
 ```
 apt-get update
-apt-get install -y build-essential git
+apt-get install -y git build-essential
 ```
 
 ### node.js
