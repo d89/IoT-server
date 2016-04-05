@@ -6,7 +6,7 @@ var uglify = require('gulp-uglify');
 var clean = require('gulp-clean');
 var browserSync = require('browser-sync');
 var reload =  browserSync.reload;
-var config = require('./config');
+var config = require('./server/config');
 var gutil = require('gulp-util');
 var runSequence = require('gulp-run-sequence');
 
