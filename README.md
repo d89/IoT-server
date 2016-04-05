@@ -89,8 +89,9 @@ mkdir logs uploads
 npm install
 bower install --allow-root
 gulp
-cp config.js.sample config.js
 chmod +x update
+cd /var/www/IoT-server/server
+cp config.js.sample config.js
 nano config.js
 ```
 
@@ -111,6 +112,7 @@ SSL is necessary (see section above).
 for a quick launch, while you are connected via SSH:
 
 ```
+cd /var/www/IoT-server/server
 node index.js
 ```
 

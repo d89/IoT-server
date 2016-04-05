@@ -280,6 +280,11 @@ app.get('/clients/get', function(req, res)
 
 app.post('/api/:client?/:command?', function(req, res)
 {
+    if (!req.body.apitoken)
+    {
+        return res.status(401).end("missing api token.");
+    }
+
     var client = req.params.client;
 
     if (!client)

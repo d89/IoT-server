@@ -6,7 +6,9 @@ var moment = require('moment');
 
 var uiApi =
 {
-    'ui:get-socket-info': function (clientSocket, msg, resp) {
+    //-------------------------------------------------------------------------------------
+    'ui:get-socket-info': function (clientSocket, msg, resp)
+    {
         logger.info("getting client socket info");
 
         var capabilities = JSON.parse(clientSocket.handshake.query.capabilities) || [];
@@ -18,7 +20,8 @@ var uiApi =
         });
     },
     //-------------------------------------------------------------------------------------
-    'ui:maintenance-info': function (clientSocket, msg, resp) {
+    'ui:maintenance-info': function (clientSocket, msg, resp)
+    {
         //logger.info("getting system maintenance info");
 
         var client_id = sockethelper.getClientName(clientSocket);
@@ -52,18 +55,26 @@ var uiApi =
         });
     },
     //-------------------------------------------------------------------------------------
-    'ui:data-count': function (clientSocket, msg, resp) {
+    'ui:data-count': function (clientSocket, msg, resp)
+    {
         logger.info("getting data count");
 
         var client_id = sockethelper.getClientName(clientSocket);
 
         storage.getLastCount(client_id, function (err, count) {
-            logger.info("responding to data count " + count);
-            resp(err, count);
+
+            if (err)
+                return resp(err);
+
+            resp(null, {
+                count: count
+            });
         })
     },
     //-------------------------------------------------------------------------------------
-    'ui:start-stop-stream': function (clientSocket, msg, resp) {
+    'ui:start-stop-stream': function (clientSocket, msg, resp)
+    {
+
         logger.info("ui request to start/stop streaming", msg);
 
         //start or stop stream?
@@ -71,20 +82,23 @@ var uiApi =
             start: msg.start
         };
 
-        clientSocket.emit('start-stop-stream', data, resp);
+        clientSocket.emit('start-stop-stream', data, function(err, msg)
+        {
+            if (err)
+            {
+                return resp({
+                    error: err
+                });
+            }
+
+            return resp(null, {
+                message: msg
+            });
+        });
     },
     //-------------------------------------------------------------------------------------
-    'ui:start-video':  function (clientSocket, msg, cb) {
-        logger.info("ui request to start recording for " + msg.duration + "s!", msg);
-
-        var data = {
-            duration: msg.duration
-        };
-
-        clientSocket.emit('start-video', data, cb);
-    },
-    //-------------------------------------------------------------------------------------
-    'ui:full': function (clientSocket, msg, resp) {
+    'ui:full': function (clientSocket, msg, resp)
+    {
         //logger.info("full request from ui: ", msg);
 
         var type = msg.type;
@@ -114,7 +128,8 @@ var uiApi =
         });
     },
     //-------------------------------------------------------------------------------------
-    'ui:aggregation': function (clientSocket, query, resp) {
+    'ui:aggregation': function (clientSocket, query, resp)
+    {
         var start = moment(query.start);
         var end = moment(query.end);
         var interval = query.interval;
@@ -138,21 +153,45 @@ var uiApi =
         });
     },
     //-------------------------------------------------------------------------------------
-    'ui:execute-actor': function (clientSocket, msg, cb) {
+    'ui:execute-actor': function (clientSocket, msg, resp)
+    {
+        if (!("actor" in msg) || !("method" in msg))
+        {
+            return resp({
+                error: "specify both actor and method"
+            });
+        }
+
         var request = {
             actor: msg.actor,
             method: msg.method,
             params: msg.params || []
         };
 
-        clientSocket.emit("execute-actor", request, cb);
+        clientSocket.emit("execute-actor", request, function(err, msg)
+        {
+            if (err)
+            {
+                return resp({
+                    error: err
+                });
+            }
+
+            return resp(null, {
+                message: msg
+            });
+        });
     },
     //-------------------------------------------------------------------------------------
-    'ui:maintenance': function (clientSocket, msg, resp) {
+    'ui:maintenance': function (clientSocket, msg, resp)
+    {
         clientSocket.emit("maintenance", msg, resp);
     },
     //-------------------------------------------------------------------------------------
-    'ui:audio': function (clientSocket, msg, resp) {
+    'ui:audio': function (clientSocket, msg, resp)
+    {
+
+        msg.mode = msg.mode || "list";
 
         if (msg.mode === "list")
         {
@@ -160,11 +199,24 @@ var uiApi =
         }
         else if (msg.mode === "delete")
         {
-            clientSocket.emit("audio", { mode: "delete", file: msg.file }, resp);
+            clientSocket.emit("audio", { mode: "delete", file: msg.file }, function(err, msg)
+            {
+                if (err)
+                {
+                    return resp({
+                        error: err
+                    });
+                }
+
+                return resp(null, {
+                    message: msg
+                });
+            });
         }
     },
     //-------------------------------------------------------------------------------------
-    'ui:ifttt': function (clientSocket, msg, resp) {
+    'ui:ifttt': function (clientSocket, msg, resp)
+    {
 
         var request = {};
 
@@ -175,12 +227,14 @@ var uiApi =
         else if (msg.mode === "testconditions")
         {
             request.mode = "testconditions";
-            request.testconditions = msg.testconditions;
+            request.testconditions = msg.testconditions || [];
         }
         else if (msg.mode === "saveconditions")
         {
             request.mode = "saveconditions";
             var conds = [];
+
+            msg.conditions = msg.conditions || [];
 
             msg.conditions.forEach(function(c)
             {

@@ -175,10 +175,16 @@ IoT.controller('IoTActionCtrl', function ($scope, $rootScope, $timeout, $compile
             message: "executed"
         };
 
-        SocketFactory.send("ui:execute-actor", execute, function(err, msg)
+        SocketFactory.send("ui:execute-actor", execute, function(err, data)
         {
             if (err)
             {
+                var msg = "invalid error from server: " + data;
+
+                if ("error" in data) {
+                    msg = data.error;
+                }
+
                 $scope.actors[actor][method].execution = {
                     state: false,
                     message: err
@@ -186,9 +192,13 @@ IoT.controller('IoTActionCtrl', function ($scope, $rootScope, $timeout, $compile
             }
             else
             {
-                console.log("got message", msg);
+                console.log("got message", data);
 
-                msg = msg || "no answer from server";
+                var msg = "invalid message from server: " + data;
+
+                if ("message" in data) {
+                    msg = data.message;
+                }
 
                 //special treatment section -----------------------------------------
                 if (actor === "recorder" && method === "record")

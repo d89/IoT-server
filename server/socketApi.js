@@ -110,6 +110,11 @@ io.on('connection', function(socket)
         var payload = msg.data[1];
         var respFunc = msg.data[2];
 
+        if (!(eventType in clientApi))
+        {
+            return logger.error("invalid eventType " + eventType);
+        }
+
         clientApi[eventType](socket, payload, respFunc);
     });
 });

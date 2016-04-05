@@ -117,7 +117,7 @@ IoT.factory('SocketFactory', function(constant)
                 return cb(err);
             }
 
-            SocketFactory.count = resp;
+            SocketFactory.count = resp.count;
 
             return cb(null, SocketFactory.count);
         };
