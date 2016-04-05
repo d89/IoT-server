@@ -75,7 +75,7 @@ else
     echo "---------------------------------------------------"
     echo "restarting service iot-server"
     echo "---------------------------------------------------"
-    pm2 start iot-server
+    cd server && pm2 start iot-server
 
     echo "---------------------------------------------------"
     echo "update successfully done"
