@@ -1,5 +1,101 @@
 IoT.controller('IoTActionCtrl', function ($scope, $rootScope, $timeout, $compile, $routeParams, $location, constant, SocketFactory)
 {
+    $scope.scenarioName = "";
+
+    $scope.scenarioTimeout = [{
+            label: "Timeout (1s)",
+            object: {
+                timeout: 1000
+            }
+        },{
+            label: "Timeout (5s)",
+            object: {
+                timeout: 5000
+            }
+        },{
+            label: "Timeout (30s)",
+            object: {
+                timeout: 30000
+            }
+        }
+    ];
+
+    $scope.scenarioList = [];
+
+    $scope.addToScenarioList = function(label, object)
+    {
+        $scope.scenarioList.push({
+            label: label,
+            object: object
+        });
+    };
+
+    $scope.saveScenario = function()
+    {
+        if ($scope.scenarioList.length === 0)
+        {
+            $scope.scenarioStatus = {
+                message: "No actor inside this scenario.",
+                state: false
+            };
+
+            return;
+        }
+
+        if ($scope.scenarioName.length === 0)
+        {
+            $scope.scenarioStatus = {
+                message: "Please put a name for this scenario.",
+                state: false
+            };
+
+            return;
+        }
+
+        $scope.scenarioStatus = {
+            message: "Executed, waiting ...",
+            state: true
+        };
+
+        var saveScenario = [];
+
+        $scope.scenarioList.forEach(function(s)
+        {
+            saveScenario.push(s.object);
+        });
+
+        console.info("SAVING", saveScenario);
+
+        SocketFactory.send("ui:scenario", {
+            type: "save",
+            data: saveScenario,
+            name: $scope.scenarioName
+        }, function(err, msg)
+        {
+            if (err)
+            {
+                $scope.scenarioStatus = {
+                    message: err,
+                    state: false
+                };
+            }
+            else
+            {
+                $scope.scenarioStatus = {
+                    message: msg,
+                    state: true
+                };
+
+                $scope.actors["scenario"]["execute"].params["name"].value = $scope.scenarioName;
+
+                setTimeout(function()
+                {
+                    $scope.hideScenariosPanel();
+                }, 500);
+            }
+        });
+    };
+
     //-----------------------------------------------------
 
     $rootScope.showLogout = true;
@@ -170,6 +266,12 @@ IoT.controller('IoTActionCtrl', function ($scope, $rootScope, $timeout, $compile
 
         console.log("EXECUTING", execute);
 
+        if ($scope.scenarioPanel === true)
+        {
+            var label = actor + "." + method + '("' + params.join('", "') + '")';
+            return $scope.addToScenarioList(label, execute);
+        }
+
         $scope.actors[actor][method].execution = {
             state: true,
             message: "executed"
@@ -217,6 +319,7 @@ IoT.controller('IoTActionCtrl', function ($scope, $rootScope, $timeout, $compile
                     var videoname = msg.split(".")[0];
                     return $location.path('/video/' + $routeParams.client_id + '/autoplay/' + videoname);
                 }
+
                 //--------------------------------------------------------------------
 
                 $scope.actors[actor][method].execution = {
@@ -312,6 +415,16 @@ IoT.controller('IoTActionCtrl', function ($scope, $rootScope, $timeout, $compile
     $scope.musicSelection = function()
     {
         $location.path('/audio/' + $routeParams.client_id);
+    };
+
+    $scope.showScenariosPanel = function()
+    {
+        $scope.scenarioPanel = true;
+    };
+
+    $scope.hideScenariosPanel = function()
+    {
+        $scope.scenarioPanel = false;
     };
 
     $scope.init = function()

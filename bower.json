@@ -36,6 +36,7 @@
     "jsSHA": "^2.0.2",
     "jquery-textcomplete": "^0.8.1",
     "jquery.overlay": "https://github.com/yuku-t/jquery-overlay.git",
-    "angular-bootstrap-colorpicker": "^3.0.24"
+    "angular-bootstrap-colorpicker": "^3.0.24",
+    "angular-drag-and-drop-lists": "^1.4.0"
   }
 }

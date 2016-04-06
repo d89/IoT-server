@@ -1,6 +1,6 @@
 'use strict';
 
-var IoT = angular.module('IoT', [ 'ngRoute', 'IoTConstants', 'colorpicker.module' ]);
+var IoT = angular.module('IoT', [ 'ngRoute', 'IoTConstants', 'colorpicker.module', 'dndLists' ]);
 
 IoT.config(['$routeProvider', function($routeProvider)
 {

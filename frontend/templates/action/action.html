@@ -1,89 +1,184 @@
 <!-- Page Content -->
 <div class="content">
 
-    <div class="block" ng-show="actors | isEmpty">
-        <div class="block-header">
-            <h3 class="block-title">Action</h3>
-        </div>
-        <div class="block-content">
-            <p>No actors, try activating some.</p>
-        </div>
-    </div>
+    <div ng-class="{ 'col-lg-8': scenarioPanel, 'col-lg-12': !scenarioPanel}">
 
-    <div class="block" ng-hide="loaded">
-        <div class="block-header">
-            <h3 class="block-title">Action</h3>
-        </div>
-        <div class="block-content">
-            <p>
-                Loading actors, please wait.
-            </p>
-            <p>
-                <i class="fa fa-3x fa-asterisk fa-spin"></i>
-            </p>
-        </div>
-    </div>
-
-    <div class="block" ng-repeat="(actorname, actor) in actors" data-actor="{{ actorname }}">
-        <div class="block-header">
-            <h3 class="block-title">{{ actorname }}</h3>
+        <div class="block" ng-show="actors | isEmpty">
+            <div class="block-header">
+                <h3 class="block-title">Action</h3>
+            </div>
+            <div class="block-content">
+                <p>No actors, try activating some.</p>
+            </div>
         </div>
 
-        <div class="block-content text-white">
-            <div class="row" ng-repeat="(methodname, method) in actor" data-method="{{ methodname }}">
-                <div class="col-lg-2">
-                    <a style="cursor: pointer" class="block block-link-hover2 text-center" ng-click="execute(actorname, methodname)">
-                        <div class="block-content block-content-full {{ pickColor(actorname, $index) }}">
-                            <i class="fa fa-gears fa-4x text-white"></i>
-                            <div class="font-w600 text-white-op push-15-t">{{ methodname }}</div>
-                        </div>
-                    </a>
-                </div>
-                <div class="col-lg-10">
-                    <div class="block-content block-content-full bg-gray-lighter text-black-op">
+        <div class="block" ng-hide="loaded">
+            <div class="block-header">
+                <h3 class="block-title">Action</h3>
+            </div>
+            <div class="block-content">
+                <p>
+                    Loading actors, please wait.
+                </p>
+                <p>
+                    <i class="fa fa-3x fa-asterisk fa-spin"></i>
+                </p>
+            </div>
+        </div>
 
-                        <div class="form-group" ng-show="method.params | isEmpty">
-                            No parameters required
-                        </div>
+        <div class="block" ng-repeat="(actorname, actor) in actors" data-actor="{{ actorname }}">
+            <div class="block-header">
+                <h3 class="block-title">{{ actorname }}</h3>
+            </div>
 
-                        <div class="form-group" ng-repeat="(paramname, param) in method.params" ng-class="{ 'has-error': param.hasError }" data-param="{{ paramname }}">
-                            <label>{{ param.options.notes }}, Data Type: {{ param.options.dataType }}</label>
+            <div class="block-content text-white">
+                <div class="row" ng-repeat="(methodname, method) in actor" data-method="{{ methodname }}">
+                    <div class="col-lg-2">
+                        <a style="cursor: pointer"
+                           ng-class="{ 'scenarioMode': scenarioPanel }"
+                           class="block block-link-hover2 text-center"
+                           ng-click="execute(actorname, methodname)">
 
-                            <div class="input-group col-xs-12">
-                                <span class="input-group-addon hideOnSmall">
-                                    <i class="fa fa-terminal"></i> {{ paramname }}
-                                </span>
-
-                                <input
-                                    autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
-                                    ng-model="actors[actorname][methodname].params[paramname].value"
-                                    class="form-control parameter"
-                                    type="text"
-                                    placeholder="{{ param.options.notes }}"
-                                />
-
-                                <span class="input-group-addon hideOnSmall" ng-hide="param.options.isOptional">
-                                    <i class="fa fa-asterisk"></i> Required
-                                </span>
+                            <div class="block-content block-content-full {{ pickColor(actorname, $index) }}">
+                                <i class="fa fa-gears fa-4x text-white"></i>
+                                <div class="font-w600 text-white-op push-15-t">{{ methodname }}</div>
                             </div>
-                        </div>
+                        </a>
+                    </div>
+                    <div class="col-lg-10">
+                        <div class="block-content block-content-full bg-gray-lighter text-black-op">
 
-                        <div class="alert" ng-show="method.execution.message" ng-class="{ 'alert-danger': !method.execution.state, 'alert-success': method.execution.state }">
-                            <p>
-                                <span ng-show="method.execution.state" class="label label-success"><i class="fa fa-check"></i> Success</span>
-                                <span ng-show="!method.execution.state" class="label label-danger"><i class="fa fa-times-circle"></i> Error</span>
-                                <b>Message:</b> <span class="statusMessage">{{ method.execution.message }}</span>
-                            </p>
-                        </div>
+                            <div class="form-group" ng-show="method.params | isEmpty">
+                                No parameters required
+                            </div>
 
-                        <!-- special buttons -->
-                        <button ng-if='actorname == "music" && methodname == "play"' class="btn btn-primary" ng-click="musicSelection()"><i class="fa fa-music"></i> Select Music</button>
-                        <button ng-if='actorname == "ledstrip" && methodname == "lightshow"' class="btn btn-primary" ng-click="musicSelection()"><i class="fa fa-lightbulb-o"></i> Select Music</button>
-                        <button ng-if='actorname == "ledstrip" && methodname == "singleColor"' colorpicker="hex" ng-model='actors["ledstrip"]["singleColor"].params["hexcolor"].value' class="btn btn-primary" style='background: {{ actors["ledstrip"]["singleColor"].params["hexcolor"].value }}'><i class="fa fa-lightbulb-o"></i> Pick Color</button>
+                            <div class="form-group" ng-repeat="(paramname, param) in method.params" ng-class="{ 'has-error': param.hasError }" data-param="{{ paramname }}">
+                                <label>{{ param.options.notes }}, Data Type: {{ param.options.dataType }}</label>
+
+                                <div class="input-group col-xs-12">
+                                    <span class="input-group-addon hideOnSmall">
+                                        <i class="fa fa-terminal"></i> {{ paramname }}
+                                    </span>
+
+                                    <input
+                                        autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+                                        ng-model="actors[actorname][methodname].params[paramname].value"
+                                        class="form-control parameter"
+                                        type="text"
+                                        placeholder="{{ param.options.notes }}"
+                                    />
+
+                                    <span class="input-group-addon hideOnSmall" ng-hide="param.options.isOptional">
+                                        <i class="fa fa-asterisk"></i> Required
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="alert" ng-show="method.execution.message" ng-class="{ 'alert-danger': !method.execution.state, 'alert-success': method.execution.state }">
+                                <p>
+                                    <span ng-show="method.execution.state" class="label label-success"><i class="fa fa-check"></i> Success</span>
+                                    <span ng-show="!method.execution.state" class="label label-danger"><i class="fa fa-times-circle"></i> Error</span>
+                                    <b>Message:</b> <span class="statusMessage">{{ method.execution.message }}</span>
+                                </p>
+                            </div>
+
+                            <!-- special buttons -->
+                            <button ng-if='actorname == "music" && methodname == "play"' class="btn btn-primary" ng-click="musicSelection()"><i class="fa fa-music"></i> Select Music</button>
+                            <button ng-if='actorname == "ledstrip" && methodname == "lightshow"' class="btn btn-primary" ng-click="musicSelection()"><i class="fa fa-lightbulb-o"></i> Select Music</button>
+                            <button ng-if='actorname == "scenario"' class="btn btn-primary" ng-click="showScenariosPanel()"><i class="fa fa-lightbulb-o"></i> Add new Scenario</button>
+                            <button ng-if='actorname == "ledstrip" && methodname == "singleColor"' colorpicker="hex" ng-model='actors["ledstrip"]["singleColor"].params["hexcolor"].value' class="btn btn-primary" style='background: {{ actors["ledstrip"]["singleColor"].params["hexcolor"].value }}'><i class="fa fa-lightbulb-o"></i> Pick Color</button>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <div class="col-lg-4" ng-show="scenarioPanel" id="scenarioPanel">
+        <div class="block block-themed">
+            <div class="block-header bg-primary">
+                <ul class="block-options">
+                    <li>
+                        <button class="btn-primary" ng-click="hideScenariosPanel()" type="button"><i class="fa fa-close"></i> Hide Scenarios</button>
+                    </li>
+                </ul>
+                <h3 class="block-title">Scenarios</h3>
+            </div>
+            <div class="block-content">
+
+                <div class="form-group">
+                    <div class="input-group col-xs-12">
+                        <span class="input-group-addon hideOnSmall" style="height: 50px;"><i class="fa fa-asterisk"></i></span>
+
+                        <input
+                            ng-model="scenarioName"
+                            style="height: 50px;"
+                            autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+                            class="form-control parameter"
+                            type="text"
+                            placeholder="Name Of Scenario"
+                        />
+                    </div>
+                </div>
+
+                <div id="scenario-dnd" style="margin-bottom: 15px">
+
+                    <div class="btn-group btn-group-justified" role="group" style="margin-bottom: 15px">
+                        <a ng-repeat="timeoutItem in scenarioTimeout"
+                                dnd-draggable="timeoutItem"
+                                dnd-effect-allowed="copy"
+                                ng-click="addToScenarioList(timeoutItem.label, timeoutItem.object)"
+                                class="btn btn-default">
+                            <i class="fa fa-clock-o"></i> {{ timeoutItem.label }}
+                        </a>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <p>
+                            <span class="label label-info"><i class="fa fa-info"></i> Info</span>
+                            Drop or rearrange items in the box below:
+                        </p>
+                    </div>
+
+                    <ul dnd-list="scenarioList" id="scenarioDropzone">
+
+                        <li ng-repeat="item in scenarioList"
+                            dnd-draggable="item"
+                            dnd-moved="scenarioList.splice($index, 1)"
+                            dnd-effect-allowed="move"
+                            ng-class="{'selected': models.selected === item}"
+                        >
+                            {{item.label}}
+                        </li>
+                    </ul>
+
+                    <div style="clear:both"></div>
+
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <a class="block block-link-hover2 text-center" dnd-list="[]">
+                                <div class="block-content block-content-full bg-gray">
+                                    <i class="fa fa-trash fa-4x text-white"></i>
+                                    <div class="font-w600 text-white-op push-15-t">Drag to trash item</div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="alert" ng-show="scenarioStatus.message" ng-class="{ 'alert-danger': !scenarioStatus.state, 'alert-success': scenarioStatus.state }">
+                        <p>
+                            <span ng-show="scenarioStatus.state" class="label label-success"><i class="fa fa-check"></i> Success</span>
+                            <span ng-show="!scenarioStatus.state" class="label label-danger"><i class="fa fa-times-circle"></i> Error</span>
+                            <b>Message:</b> <span class="statusMessage">{{ scenarioStatus.message }}</span>
+                        </p>
+                    </div>
+
+                    <a ng-click="saveScenario()" class="btn btn-primary btn-lg"><i class="fa fa-save text-white"></i> Save Scenario</a>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
 <!-- END Page Content -->

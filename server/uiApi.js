@@ -188,9 +188,13 @@ var uiApi =
         clientSocket.emit("maintenance", msg, resp);
     },
     //-------------------------------------------------------------------------------------
+    'ui:scenario': function (clientSocket, msg, resp)
+    {
+        clientSocket.emit("scenario", msg, resp);
+    },
+    //-------------------------------------------------------------------------------------
     'ui:audio': function (clientSocket, msg, resp)
     {
-
         msg.mode = msg.mode || "list";
 
         if (msg.mode === "list")

@@ -63,7 +63,8 @@ gulp.task('js-libs', function ()
         "./frontend/bower_components/jquery-textcomplete/dist/jquery.textcomplete.min.js",
 
         //with angular dependency
-        "./frontend/bower_components/angular-bootstrap-colorpicker/js/bootstrap-colorpicker-module.min.js"
+        "./frontend/bower_components/angular-bootstrap-colorpicker/js/bootstrap-colorpicker-module.min.js",
+        "./frontend/bower_components/angular-drag-and-drop-lists/angular-drag-and-drop-lists.min.js"
     ])
     .pipe(concat("libs.js"))
     .pipe(gulp.dest(DIST_DIR + '/js'));
