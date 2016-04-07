@@ -35,6 +35,8 @@
                 <div class="row" ng-repeat="(methodname, method) in actor" data-method="{{ methodname }}">
                     <div class="col-lg-2">
                         <a style="cursor: pointer"
+                           dnd-draggable="dragActor(actorname, methodname)"
+                           dnd-effect-allowed="copy"
                            ng-class="{ 'scenarioMode': scenarioPanel }"
                            class="block block-link-hover2 text-center"
                            ng-click="execute(actorname, methodname)">
@@ -85,7 +87,8 @@
                             <!-- special buttons -->
                             <button ng-if='actorname == "music" && methodname == "play"' class="btn btn-primary" ng-click="musicSelection()"><i class="fa fa-music"></i> Select Music</button>
                             <button ng-if='actorname == "ledstrip" && methodname == "lightshow"' class="btn btn-primary" ng-click="musicSelection()"><i class="fa fa-lightbulb-o"></i> Select Music</button>
-                            <button ng-if='actorname == "scenario"' class="btn btn-primary" ng-click="showScenariosPanel()"><i class="fa fa-lightbulb-o"></i> Add new Scenario</button>
+                            <button ng-if='actorname == "scenario" && !scenarioPanel' class="btn btn-primary" ng-click="showScenariosPanel()"><i class="fa fa-plus"></i> Add new Scenario</button>
+                            <button ng-if='actorname == "scenario"' class="btn btn-success" ng-click="manageScenarios()"><i class="fa fa-cog"></i> Manage Scenarios</button>
                             <button ng-if='actorname == "ledstrip" && methodname == "singleColor"' colorpicker="hex" ng-model='actors["ledstrip"]["singleColor"].params["hexcolor"].value' class="btn btn-primary" style='background: {{ actors["ledstrip"]["singleColor"].params["hexcolor"].value }}'><i class="fa fa-lightbulb-o"></i> Pick Color</button>
                         </div>
                     </div>
@@ -123,24 +126,24 @@
 
                 <div id="scenario-dnd" style="margin-bottom: 15px">
 
-                    <div class="btn-group btn-group-justified" role="group" style="margin-bottom: 15px">
-                        <a ng-repeat="timeoutItem in scenarioTimeout"
-                                dnd-draggable="timeoutItem"
-                                dnd-effect-allowed="copy"
-                                ng-click="addToScenarioList(timeoutItem.label, timeoutItem.object)"
-                                class="btn btn-default">
-                            <i class="fa fa-clock-o"></i> {{ timeoutItem.label }}
-                        </a>
-                    </div>
+                    <a
+                        ng-repeat="timeoutItem in scenarioTimeout"
+                        dnd-draggable="timeoutItem"
+                        dnd-effect-allowed="copy"
+                        ng-click="addToScenarioList(timeoutItem)"
+                        class="btn btn-default btn-block"
+                    >
+                        <i class="fa fa-clock-o"></i> Timeout ({{ timeoutItem.timeout }}ms)
+                    </a>
 
-                    <div class="alert alert-info">
+                    <div class="alert alert-info" style="margin-top: 15px">
                         <p>
                             <span class="label label-info"><i class="fa fa-info"></i> Info</span>
                             Drop or rearrange items in the box below:
                         </p>
                     </div>
 
-                    <ul dnd-list="scenarioList" id="scenarioDropzone">
+                    <ul dnd-list="scenarioList" dnd-drop="onDrop(list, item, index)" id="scenarioDropzone">
 
                         <li ng-repeat="item in scenarioList"
                             dnd-draggable="item"

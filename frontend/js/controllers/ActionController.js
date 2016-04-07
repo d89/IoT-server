@@ -3,31 +3,97 @@ IoT.controller('IoTActionCtrl', function ($scope, $rootScope, $timeout, $compile
     $scope.scenarioName = "";
 
     $scope.scenarioTimeout = [{
-            label: "Timeout (1s)",
-            object: {
-                timeout: 1000
-            }
-        },{
-            label: "Timeout (5s)",
-            object: {
-                timeout: 5000
-            }
-        },{
-            label: "Timeout (30s)",
-            object: {
-                timeout: 30000
-            }
-        }
-    ];
+        timeout: 1000
+    },{
+        timeout: 5000
+    },{
+        timeout: 30000
+    }];
 
     $scope.scenarioList = [];
 
-    $scope.addToScenarioList = function(label, object)
+    $scope.addToScenarioList = function(object, justReturn, addToIndex)
     {
-        $scope.scenarioList.push({
-            label: label,
-            object: object
-        });
+        var obj = {};
+
+        if ("timeout" in object)
+        {
+            obj = {
+                label: "Timeout (" + object.timeout + "ms)",
+                object: object
+            };
+        }
+        else
+        {
+            var paramString = "";
+            var reducedParams = [];
+
+            object.params.forEach(function(p)
+            {
+                if (p.toString().length > 0)
+                {
+                    reducedParams.push(p);
+                }
+            });
+
+            if (reducedParams.length)
+            {
+                paramString = '"' + reducedParams.join('", "') + '"';
+            }
+
+            obj = {
+                label: object.actor + "." + object.method + '(' + paramString + ')',
+                object: object
+            };
+        }
+
+        if (justReturn)
+        {
+            return obj;
+        }
+
+        if (addToIndex != undefined)
+        {
+            $scope.scenarioList.splice(addToIndex, 0, obj);
+            return;
+        }
+
+        $scope.scenarioList.push(obj);
+    };
+
+    $scope.onDrop = function(list, item, index)
+    {
+        //console.log("ondrop", list, item, index);
+
+        //already processed: reordering inside the list
+        if ("label" in item)
+        {
+            return item;
+        }
+
+        //dragging the actor inside
+        if ("dragActor" in item)
+        {
+            var addToIndex = index;
+            $scope.execute(item.actorname, item.methodname, addToIndex);
+            return false;
+        }
+
+        return $scope.addToScenarioList(item, true);
+    };
+
+    $scope.dragActor = function(actorname, methodname)
+    {
+        return {
+            dragActor: true,
+            actorname: actorname,
+            methodname: methodname
+        };
+    };
+
+    $scope.manageScenarios = function()
+    {
+        return $location.path('/scenario/' + $routeParams.client_id);
     };
 
     $scope.saveScenario = function()
@@ -90,7 +156,7 @@ IoT.controller('IoTActionCtrl', function ($scope, $rootScope, $timeout, $compile
 
                 setTimeout(function()
                 {
-                    $scope.hideScenariosPanel();
+                    $location.path('/scenario/' + $routeParams.client_id);
                 }, 500);
             }
         });
@@ -116,6 +182,10 @@ IoT.controller('IoTActionCtrl', function ($scope, $rootScope, $timeout, $compile
             title: "Action",
             href: "#action/" + $routeParams.client_id,
             active: true
+        },
+        {
+            title: "Scenario",
+            href: "#scenario/" + $routeParams.client_id,
         },
         {
             title: "If This, Then That",
@@ -217,7 +287,7 @@ IoT.controller('IoTActionCtrl', function ($scope, $rootScope, $timeout, $compile
     //-----------------------------------------------------
     // logic
 
-    $scope.execute = function(actor, method)
+    $scope.execute = function(actor, method, addToIndex)
     {
         var isValid = true;
         var paramStorage = $scope.getParamStorage();
@@ -268,8 +338,7 @@ IoT.controller('IoTActionCtrl', function ($scope, $rootScope, $timeout, $compile
 
         if ($scope.scenarioPanel === true)
         {
-            var label = actor + "." + method + '("' + params.join('", "') + '")';
-            return $scope.addToScenarioList(label, execute);
+            return $scope.addToScenarioList(execute, false, addToIndex);
         }
 
         $scope.actors[actor][method].execution = {
@@ -330,6 +399,56 @@ IoT.controller('IoTActionCtrl', function ($scope, $rootScope, $timeout, $compile
         });
     };
 
+    $scope.editScenario = function(name)
+    {
+        $scope.loadScenario(name, function(err, scenario)
+        {
+            if (err)
+            {
+                SocketFactory.callLifecycleCallback("functional_error", "Could not load scenarios: " + err);
+            }
+            else
+            {
+                $scope.scenarioName = scenario.name;
+
+                scenario.actors.forEach(function(actor)
+                {
+                    $scope.addToScenarioList(actor);
+                });
+
+                $scope.showScenariosPanel();
+            }
+        });
+    };
+
+    $scope.loadScenario = function(name, cb)
+    {
+        SocketFactory.send("ui:scenario", {
+            type: "load"
+        }, function(err, scenarios)
+        {
+            if (err)
+            {
+                return cb("Could not load scenarios: " + err);
+            }
+
+            var found = false;
+
+            scenarios.forEach(function(s)
+            {
+               if (s.name === name)
+               {
+                   found = s;
+               }
+            });
+
+            if (found)
+                return cb(null, found);
+
+            return cb("scenario not found");
+        });
+    };
+
     $scope.loadActors = function(onloaded)
     {
         //console.log("available options!");
@@ -387,28 +506,37 @@ IoT.controller('IoTActionCtrl', function ($scope, $rootScope, $timeout, $compile
     {
         var audio = $routeParams.audio;
         var lightshow = $routeParams.lightshow;
+        var scenarioAdd = $routeParams.scenario_add;
+        var scenarioEdit = $routeParams.scenario_edit;
 
-        if (audio || lightshow)
+        if (audio)
         {
-            if (audio)
+            setTimeout(function()
             {
-                setTimeout(function()
-                {
-                    var element = $("[data-actor='music'] [data-method='play']");
-                    Styles.hightlightScroll(element);
-                    $scope.actors["music"]["play"].params["title"].value = audio;
-                    $scope.execute("music", "play");
-                }, 500);
+                var element = $("[data-actor='music'] [data-method='play']");
+                Styles.hightlightScroll(element);
+                $scope.actors["music"]["play"].params["title"].value = audio;
+                $scope.execute("music", "play");
+            }, 500);
 
-            } else {
-                setTimeout(function()
-                {
-                    var element = $("[data-actor='ledstrip'] [data-method='lightshow']");
-                    Styles.hightlightScroll(element);
-                    $scope.actors["ledstrip"]["lightshow"].params["title"].value = lightshow;
-                    $scope.execute("ledstrip", "lightshow");
-                }, 500);
-            }
+        }
+        else if (lightshow)
+        {
+            setTimeout(function()
+            {
+                var element = $("[data-actor='ledstrip'] [data-method='lightshow']");
+                Styles.hightlightScroll(element);
+                $scope.actors["ledstrip"]["lightshow"].params["title"].value = lightshow;
+                $scope.execute("ledstrip", "lightshow");
+            }, 500);
+        }
+        else if (scenarioAdd)
+        {
+            $scope.showScenariosPanel();
+        }
+        else if (scenarioEdit)
+        {
+            $scope.editScenario(scenarioEdit);
         }
     };
 

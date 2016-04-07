@@ -33,6 +33,18 @@ IoT.config(['$routeProvider', function($routeProvider)
             templateUrl: 'templates/action/action.html',
             controller: 'IoTActionCtrl'
         })
+        .when('/action/:client_id/scenario/add/:scenario_add', {
+            templateUrl: 'templates/action/action.html',
+            controller: 'IoTActionCtrl'
+        })
+        .when('/action/:client_id/scenario/edit/:scenario_edit', {
+            templateUrl: 'templates/action/action.html',
+            controller: 'IoTActionCtrl'
+        })
+        .when('/scenario/:client_id', {
+            templateUrl: 'templates/scenario/scenario.html',
+            controller: 'IoTScenarioCtrl'
+        })
         .when('/video/:client_id', {
             templateUrl: 'templates/video/video.html',
             controller: 'IoTVideoCtrl'

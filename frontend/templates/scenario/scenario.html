@@ -1,0 +1,102 @@
+<!-- Page Content -->
+<div class="content">
+
+    <div class="col-lg-12">
+
+        <div class="block" ng-hide="loaded">
+            <div class="block-header">
+                <h3 class="block-title">Scenarios</h3>
+            </div>
+            <div class="block-content">
+                <p>
+                    Loading scenarios, please wait.
+                </p>
+                <p>
+                    <i class="fa fa-3x fa-asterisk fa-spin"></i>
+                </p>
+            </div>
+        </div>
+
+        <div class="block" ng-show="!supportsActor.scenario && loaded">
+            <div class="block-header">
+                <h3 class="block-title">Scenario</h3>
+            </div>
+            <div class="block-content">
+                <p>Scenario actor not enabled, please check your config and enable it before you use this page.</p>
+            </div>
+        </div>
+
+        <div class="block" ng-show="supportsActor.scenario && loaded">
+            <div class="block-header">
+                <h3 class="block-title">Scenarios</h3>
+            </div>
+            <div class="block-content text-white">
+                <div class="row">
+
+                    <div class="block-content block-content-full text-black" ng-show="scenarios.length == 0">
+                        No scenario found, create one if you want.
+                    </div>
+
+                    <div class="col-lg-4" ng-repeat="scenario in scenarios">
+                        <div class="block block-themed">
+                            <div class="block-header bg-primary">
+                                <h3 class="block-title">{{ scenario.name }}</h3>
+                            </div>
+                            <div class="block-content block-content-full text-center bg-gray-lighter">
+                                <a style="cursor: pointer" ng-click="executeScenario(scenario.name)">
+                                    <i class="fa fa-play-circle fa-5x text-primary"></i>
+                                </a>
+                            </div>
+                            <div class="block-content bg-gray-light">
+                                <div class="row items-push text-center">
+                                    <div class="col-xs-6 border-r">
+                                        <a style="display: block; cursor: pointer" ng-click="editScenario(scenario.name)">
+                                            <div class="push-5 text-warning"><i class="fa fa-pencil fa-2x"></i></div>
+                                            <div class="h5 font-w300 text-muted">Edit Scenario</div>
+                                        </a>
+                                    </div>
+                                    <div class="col-xs-6">
+                                        <a style="display: block; cursor: pointer" ng-click="deleteScenario(scenario.name)">
+                                            <div class="push-5 text-danger"><i class="fa fa-remove fa-2x"></i></div>
+                                            <div class="h5 font-w300 text-muted">Delete Scenario</div>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="alert" ng-show="scenarioExecution.message" ng-class="{ 'alert-danger': !scenarioExecution.state, 'alert-success': scenarioExecution.state }">
+                    <p>
+                        <span ng-show="scenarioExecution.state" class="label label-success"><i class="fa fa-check"></i> Success</span>
+                        <span ng-show="!scenarioExecution.state" class="label label-danger"><i class="fa fa-times-circle"></i> Error</span>
+                        <b>Message:</b> <span class="statusMessage">{{ scenarioExecution.message }}</span>
+                    </p>
+                </div>
+                
+            </div>
+        </div>
+
+        <div class="block" ng-show="supportsActor.scenario && loaded">
+            <div class="block-header">
+                <h3 class="block-title">Add New Scenario</h3>
+            </div>
+            <div class="block-content text-white">
+                <div class="row">
+                    <div class="col-xs-6 col-sm-4 col-lg-2">
+                        <a style="cursor: pointer" class="block block-link-hover2 text-center" ng-click="createScenario()">
+                            <div class="block-content block-content-full bg-success">
+                                <i class="fa fa-plus-circle fa-4x text-white"></i>
+                                <div class="font-w600 text-white-op push-15-t">Create new Scenario</div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<!-- END Page Content -->

@@ -22,6 +22,10 @@ IoT.controller('IoTDashboardCtrl', function ($scope, $rootScope, $timeout, $comp
             href: "#action/" + $routeParams.client_id
         },
         {
+            title: "Scenario",
+            href: "#scenario/" + $routeParams.client_id,
+        },
+        {
             title: "If This, Then That",
             href: "#ifttt/" + $routeParams.client_id
         },

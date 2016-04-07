@@ -21,6 +21,10 @@ IoT.controller('IoTVideoCtrl', function ($scope, $rootScope, $timeout, $compile,
             href: "#action/" + $routeParams.client_id
         },
         {
+            title: "Scenario",
+            href: "#scenario/" + $routeParams.client_id,
+        },
+        {
             title: "If This, Then That",
             href: "#ifttt/" + $routeParams.client_id
         },
