@@ -113,7 +113,7 @@ IoT.factory('PushFactory', function (constant)
                     }
                 });
             }
-            else //service worker is capable and ready
+            else if (!err) //service worker is capable and ready
             {
                 var msg = {
                     clientName: clientName,
