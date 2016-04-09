@@ -11456,6 +11456,6 @@ a.navlink {
     margin: 5px;
 }
 
-a[draggable], .draggable-item {
+.draggable-item {
     cursor: move !important;
 }

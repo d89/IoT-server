@@ -1,6 +1,8 @@
 var sockethelper = require('./sockethelper');
 var storage = require('./storage');
 var logger = require('./logger');
+var push = require('./push');
+var mail = require('./mail');
 
 var clientApi =
 {
@@ -87,6 +89,21 @@ var clientApi =
         {
             uiSocket.emit("youtube-download", msg);
         });
+    },
+    //-------------------------------------------------------------------------------------
+    'client:push': function(clientSocket, msg, resp)
+    {
+        var clientName = sockethelper.getClientName(clientSocket);
+
+        push.push(clientName, function(err, msg)
+        {
+            resp(err, msg);
+        });
+    },
+    //-------------------------------------------------------------------------------------
+    'client:mail': function(clientSocket, msg, resp)
+    {
+        mail.mail(msg.to, msg.subject, msg.text, resp);
     },
     //-------------------------------------------------------------------------------------
     'client:live-stream': function(clientSocket, msg, resp)
