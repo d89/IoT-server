@@ -1,7 +1,7 @@
 <!-- Page Content -->
 <div class="content">
 
-    <div ng-class="{ 'col-lg-8': scenarioPanel, 'col-lg-12': !scenarioPanel}">
+    <div id="actionPanel" ng-class="{ 'col-lg-8': scenarioPanel, 'col-lg-12': !scenarioPanel}">
 
         <div class="block" ng-show="actors | isEmpty">
             <div class="block-header">
@@ -26,6 +26,18 @@
             </div>
         </div>
 
+        <div class="block" ng-hide="!loaded || (actors | isEmpty)">
+            <div class="block-header">
+                <h3 class="block-title">Search Actor</h3>
+            </div>
+            <div class="block-content">
+                <div class="form-material form-material-primary input-group">
+                    <input class="form-control" type="text" placeholder="Search for Actors" ng-model="actorSearchTerm" ng-change="actorSearchTermChanged()">
+                    <span class="input-group-addon"><i class="si si-magnifier"></i></span>
+                </div>
+            </div>
+        </div>
+
         <div class="block" ng-repeat="(actorname, actor) in actors" data-actor="{{ actorname }}">
             <div class="block-header">
                 <h3 class="block-title">{{ actorname }}</h3>
@@ -41,13 +53,13 @@
                            class="block block-link-hover2 text-center"
                            ng-click="execute(actorname, methodname)">
 
-                            <div class="block-content block-content-full {{ pickColor(actorname, $index) }}">
+                            <div class="block-content block-content-full methodcall {{ method.colorClass }}">
                                 <i class="fa fa-gears fa-4x text-white"></i>
                                 <div class="font-w600 text-white-op push-15-t">{{ methodname }}</div>
                             </div>
                         </a>
                     </div>
-                    <div class="col-lg-10">
+                    <div class="col-lg-10"">
                         <div class="block-content block-content-full bg-gray-lighter text-black-op">
 
                             <div class="form-group" ng-show="method.params | isEmpty">
@@ -87,6 +99,11 @@
                             <!-- special buttons -->
                             <button ng-if='actorname == "music" && methodname == "play"' class="btn btn-primary" ng-click="musicSelection()"><i class="fa fa-music"></i> Select Music</button>
                             <button ng-if='actorname == "ledstrip" && methodname == "lightshow"' class="btn btn-primary" ng-click="musicSelection()"><i class="fa fa-lightbulb-o"></i> Select Music</button>
+                            <div ng-if='actorname == "scenario"'>
+                                <p>
+                                    <button ng-repeat="scenario in allScenarios" class="btn btn-default btn-xs" ng-click="setScenario(scenario.name)"><i class="fa fa-edit"></i> {{ scenario.name }}</button>
+                                </p>
+                            </div>
                             <button ng-if='actorname == "scenario" && !scenarioPanel' class="btn btn-primary" ng-click="showScenariosPanel()"><i class="fa fa-plus"></i> Add new Scenario</button>
                             <button ng-if='actorname == "scenario"' class="btn btn-success" ng-click="manageScenarios()"><i class="fa fa-cog"></i> Manage Scenarios</button>
                             <button ng-if='actorname == "ledstrip" && methodname == "singleColor"' colorpicker="hex" ng-model='actors["ledstrip"]["singleColor"].params["hexcolor"].value' class="btn btn-primary" style='background: {{ actors["ledstrip"]["singleColor"].params["hexcolor"].value }}'><i class="fa fa-lightbulb-o"></i> Pick Color</button>
@@ -97,8 +114,8 @@
         </div>
     </div>
 
-    <div class="col-lg-4" ng-show="scenarioPanel" id="scenarioPanel">
-        <div class="block block-themed">
+    <div class="col-lg-4" ng-show="scenarioPanel" id="scenarioPanel" scenario-panel-layout="">
+        <div id="scrollableScenario" class="block block-themed affix">
             <div class="block-header bg-primary">
                 <ul class="block-options">
                     <li>
@@ -107,7 +124,7 @@
                 </ul>
                 <h3 class="block-title">Scenarios</h3>
             </div>
-            <div class="block-content">
+            <div class="block-content" id="scenarioContent" style="overflow-y: auto">
 
                 <div class="form-group">
                     <div class="input-group col-xs-12">
@@ -131,7 +148,7 @@
                         dnd-draggable="timeoutItem"
                         dnd-effect-allowed="copy"
                         ng-click="addToScenarioList(timeoutItem)"
-                        class="btn btn-default btn-block"
+                        class="btn btn-default bg-gray-dark btn-block text-white"
                     >
                         <i class="fa fa-clock-o"></i> Timeout ({{ timeoutItem.timeout }}ms)
                     </a>
@@ -149,8 +166,12 @@
                             dnd-draggable="item"
                             dnd-moved="scenarioList.splice($index, 1)"
                             dnd-effect-allowed="move"
+                            class="text-white {{ item.className }}"
                             ng-class="{'selected': models.selected === item}"
                         >
+                            <i ng-if="item.object.timeout" class="fa fa-clock-o"></i>
+                            <i ng-if="!item.object.timeout" class="fa fa-cog"></i>
+
                             {{item.label}}
                         </li>
                     </ul>

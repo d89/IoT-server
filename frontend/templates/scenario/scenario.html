@@ -37,13 +37,14 @@
                         No scenario found, create one if you want.
                     </div>
 
-                    <div class="col-lg-4" ng-repeat="scenario in scenarios">
-                        <div class="block block-themed">
+                    <div class="col-lg-3 col-md-4 col-xs-6" ng-repeat="scenario in scenarios">
+
+                        <div class="block block-themed block-bordered">
                             <div class="block-header bg-primary">
                                 <h3 class="block-title">{{ scenario.name }}</h3>
                             </div>
-                            <div class="block-content block-content-full text-center bg-gray-lighter">
-                                <a style="cursor: pointer" ng-click="executeScenario(scenario.name)">
+                            <div class="block-content block-content-full text-center" style="background: url(assets/img/photos/photo17.jpg) 50% 76%;">
+                                <a style="cursor: pointer" class="text-center" ng-click="executeScenario(scenario.name)">
                                     <i class="fa fa-play-circle fa-5x text-primary"></i>
                                 </a>
                             </div>
@@ -51,13 +52,13 @@
                                 <div class="row items-push text-center">
                                     <div class="col-xs-6 border-r">
                                         <a style="display: block; cursor: pointer" ng-click="editScenario(scenario.name)">
-                                            <div class="push-5 text-warning"><i class="fa fa-pencil fa-2x"></i></div>
+                                            <div class="push-5"><i class="fa fa-pencil fa-2x"></i></div>
                                             <div class="h5 font-w300 text-muted">Edit Scenario</div>
                                         </a>
                                     </div>
                                     <div class="col-xs-6">
                                         <a style="display: block; cursor: pointer" ng-click="deleteScenario(scenario.name)">
-                                            <div class="push-5 text-danger"><i class="fa fa-remove fa-2x"></i></div>
+                                            <div class="push-5"><i class="fa fa-remove fa-2x"></i></div>
                                             <div class="h5 font-w300 text-muted">Delete Scenario</div>
                                         </a>
                                     </div>

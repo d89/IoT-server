@@ -1214,6 +1214,16 @@ var Styles = function() {
             return str;
         },
 
+        blink: function(element, count)
+        {
+            count = count || 3;
+
+            for (var i = 0; i < count; i++)
+            {
+                element.fadeOut(100).fadeIn(100);
+            }
+        },
+
         hightlightScroll: function(element)
         {
             element = $(element);
@@ -1225,10 +1235,7 @@ var Styles = function() {
                 scrollTop: element.offset().top - 130
             }, 500, function()
             {
-                for (var i = 0; i < 3; i++)
-                {
-                    element.fadeOut(100).fadeIn(100);
-                }
+                Styles.blink(element);
             });
         },
 

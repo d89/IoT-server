@@ -1,5 +1,53 @@
 IoT.controller('IoTActionCtrl', function ($scope, $rootScope, $timeout, $compile, $routeParams, $location, constant, SocketFactory)
 {
+    //-----------------------------------------------------
+
+    $rootScope.showLogout = true;
+
+    $rootScope.sidebar =
+    {
+        "Sensor Data":
+        [{
+            title: "Dashboard",
+            href: "#dashboard/" + $routeParams.client_id
+        },
+        {
+            title: "History",
+            href: "#history/" + $routeParams.client_id
+        }],
+        "Actions":
+        [{
+            title: "Action",
+            href: "#action/" + $routeParams.client_id,
+            active: true
+        },
+        {
+            title: "Scenario",
+            href: "#scenario/" + $routeParams.client_id,
+        },
+        {
+            title: "If This, Then That",
+            href: "#ifttt/" + $routeParams.client_id
+        },
+        {
+            title: "Maintenance",
+            href: "#maintenance/" + $routeParams.client_id
+        },
+        {
+            title: "Video",
+            href: "#video/" + $routeParams.client_id
+        },
+        {
+            title: "Audio",
+            href: "#audio/" + $routeParams.client_id
+        }],
+        "Device Overview":
+        [{
+            title: "Connected Devices",
+            href: "#index"
+        }]
+    };
+
     $scope.scenarioName = "";
 
     $scope.scenarioTimeout = [{
@@ -11,10 +59,12 @@ IoT.controller('IoTActionCtrl', function ($scope, $rootScope, $timeout, $compile
     }];
 
     $scope.scenarioList = [];
+    $scope.allScenarios = [];
 
     $scope.addToScenarioList = function(object, justReturn, addToIndex)
     {
         var obj = {};
+        var className = "btn-default";
 
         if ("timeout" in object)
         {
@@ -41,11 +91,18 @@ IoT.controller('IoTActionCtrl', function ($scope, $rootScope, $timeout, $compile
                 paramString = '"' + reducedParams.join('", "') + '"';
             }
 
+            if ("actor" in object && object.actor in $scope.actors && object.method in $scope.actors[object.actor])
+            {
+                className = $scope.actors[object.actor][object.method].colorClass;
+            }
+
             obj = {
                 label: object.actor + "." + object.method + '(' + paramString + ')',
                 object: object
             };
         }
+
+        obj.className = className;
 
         if (justReturn)
         {
@@ -55,10 +112,21 @@ IoT.controller('IoTActionCtrl', function ($scope, $rootScope, $timeout, $compile
         if (addToIndex != undefined)
         {
             $scope.scenarioList.splice(addToIndex, 0, obj);
-            return;
+        }
+        else
+        {
+            $scope.scenarioList.push(obj);
         }
 
-        $scope.scenarioList.push(obj);
+        (function(addToIndex, listLength, object)
+        {
+            setTimeout(function()
+            {
+                var flashPosition = addToIndex != undefined ? addToIndex : listLength - 1;
+                var listItem = $("#scenarioDropzone li:eq(" + flashPosition + ")");
+                Styles.blink(listItem);
+            }, 300);
+        }(addToIndex, $scope.scenarioList.length, object));
     };
 
     $scope.onDrop = function(list, item, index)
@@ -160,54 +228,6 @@ IoT.controller('IoTActionCtrl', function ($scope, $rootScope, $timeout, $compile
                 }, 500);
             }
         });
-    };
-
-    //-----------------------------------------------------
-
-    $rootScope.showLogout = true;
-
-    $rootScope.sidebar =
-    {
-        "Sensor Data":
-        [{
-            title: "Dashboard",
-            href: "#dashboard/" + $routeParams.client_id
-        },
-        {
-            title: "History",
-            href: "#history/" + $routeParams.client_id
-        }],
-        "Actions":
-        [{
-            title: "Action",
-            href: "#action/" + $routeParams.client_id,
-            active: true
-        },
-        {
-            title: "Scenario",
-            href: "#scenario/" + $routeParams.client_id,
-        },
-        {
-            title: "If This, Then That",
-            href: "#ifttt/" + $routeParams.client_id
-        },
-        {
-            title: "Maintenance",
-            href: "#maintenance/" + $routeParams.client_id
-        },
-        {
-            title: "Video",
-            href: "#video/" + $routeParams.client_id
-        },
-        {
-            title: "Audio",
-            href: "#audio/" + $routeParams.client_id
-        }],
-        "Device Overview":
-        [{
-            title: "Connected Devices",
-            href: "#index"
-        }]
     };
 
     //-----------------------------------------------------
@@ -401,51 +421,54 @@ IoT.controller('IoTActionCtrl', function ($scope, $rootScope, $timeout, $compile
 
     $scope.editScenario = function(name)
     {
-        $scope.loadScenario(name, function(err, scenario)
+        var scenario = false;
+
+        $scope.allScenarios.forEach(function(s)
         {
-            if (err)
+            if (s.name === name)
             {
-                SocketFactory.callLifecycleCallback("functional_error", "Could not load scenarios: " + err);
-            }
-            else
-            {
-                $scope.scenarioName = scenario.name;
-
-                scenario.actors.forEach(function(actor)
-                {
-                    $scope.addToScenarioList(actor);
-                });
-
-                $scope.showScenariosPanel();
+                scenario = s;
             }
         });
+
+        if (!scenario)
+        {
+            return SocketFactory.callLifecycleCallback("functional_error", "Could not find scenario: " + name);
+        }
+
+        $scope.scenarioName = name;
+
+        scenario.actors.forEach(function(actor)
+        {
+            $scope.addToScenarioList(actor);
+        });
+
+        $scope.showScenariosPanel();
     };
 
-    $scope.loadScenario = function(name, cb)
+    $scope.setScenario = function(scenarioName)
     {
+        $scope.actors["scenario"]["execute"].params["name"].value = scenarioName;
+    };
+
+    $scope.loadScenarios = function(cb)
+    {
+        if (!("scenario" in $scope.supportsActor))
+        {
+            return cb([]);
+        }
+
         SocketFactory.send("ui:scenario", {
             type: "load"
         }, function(err, scenarios)
         {
             if (err)
             {
-                return cb("Could not load scenarios: " + err);
+                console.error(err);
+                return cb([]);
             }
 
-            var found = false;
-
-            scenarios.forEach(function(s)
-            {
-               if (s.name === name)
-               {
-                   found = s;
-               }
-            });
-
-            if (found)
-                return cb(null, found);
-
-            return cb("scenario not found");
+            return cb(scenarios);
         });
     };
 
@@ -475,11 +498,12 @@ IoT.controller('IoTActionCtrl', function ($scope, $rootScope, $timeout, $compile
                 {
                     $scope.actors[actor.name] = {};
 
-                    actor.methods.forEach(function(method)
+                    actor.methods.forEach(function(method, i)
                     {
                         $scope.actors[actor.name][method.name] = {
                             params: {},
-                            execution: {}
+                            execution: {},
+                            colorClass: $scope.pickColor(actor.name, i)
                         };
 
                         method.params.forEach(function(param)
@@ -548,11 +572,37 @@ IoT.controller('IoTActionCtrl', function ($scope, $rootScope, $timeout, $compile
     $scope.showScenariosPanel = function()
     {
         $scope.scenarioPanel = true;
+
+        $("#scrollableScenario").css("top", "-1000px").animate({
+            top: 300
+        }, 500, function()
+        {
+            window.setScenarioPanelFixed();
+        });
     };
 
     $scope.hideScenariosPanel = function()
     {
         $scope.scenarioPanel = false;
+    };
+
+    $scope.actorSearchTermChanged = function()
+    {
+        var term = $scope.actorSearchTerm;
+
+        $("[data-actor]").each(function()
+        {
+            var actorName = $(this).attr("data-actor");
+
+            if (actorName.indexOf(term) === -1)
+            {
+                $(this).hide();
+            }
+            else
+            {
+                $(this).show();
+            }
+        });
     };
 
     $scope.init = function()
@@ -563,11 +613,17 @@ IoT.controller('IoTActionCtrl', function ($scope, $rootScope, $timeout, $compile
         $scope.connect(false, function()
         {
             $scope.buildColors();
+
             $scope.loadActors(function()
             {
                 $scope.loaded = true;
                 $scope.$apply();
-                $scope.checkAutoPlay();
+
+                $scope.loadScenarios(function(objs)
+                {
+                    $scope.allScenarios = objs;
+                    $scope.checkAutoPlay();
+                });
             });
         });
     };
@@ -575,4 +631,56 @@ IoT.controller('IoTActionCtrl', function ($scope, $rootScope, $timeout, $compile
     //-----------------------------------------------------
 
     $scope.init();
+});
+
+IoT.directive('scenarioPanelLayout', function()
+{
+    return {
+        restrict: 'A',
+        link: function(scope, element, attrs)
+        {
+            window.setScenarioPanelFixed = function()
+            {
+                var WIDTH_MIN = 1200;
+                var TOP_POSITION_FREEZE = 73;
+
+                if (!$("#scrollableScenario").is(":visible"))
+                {
+                    return;
+                }
+
+                var width = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+
+                if (width < WIDTH_MIN)
+                {
+                    $("#scrollableScenario").removeClass("affix").css("top", "");
+                    $("#scenarioContent").css("height", "");
+                    return;
+                }
+
+                if (!$("#scrollableScenario").hasClass("affix"))
+                {
+                    $("#scrollableScenario").addClass("affix");
+                }
+
+                //freeze top bar
+                var top = $("#actionPanel").offset().top - $(this).scrollTop();
+                if (top < TOP_POSITION_FREEZE) top = TOP_POSITION_FREEZE;
+                $(".affix").css("top", top + "px");
+
+                // set scroll height for sidebar
+                $("#scenarioContent").css("height", $(window).height() - (TOP_POSITION_FREEZE * 2) + "px");
+            };
+
+            $(document).scroll(function()
+            {
+                window.setScenarioPanelFixed();
+            });
+
+            $(window).resize(function()
+            {
+                window.setScenarioPanelFixed();
+            });
+        }
+    };
 });

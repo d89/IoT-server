@@ -11424,7 +11424,6 @@ a.navlink {
  * browsers we can use event.offsetY for this.
  */
 #scenario-dnd ul[dnd-list] li {
-  background-color: #fff;
   border: 1px solid #ddd;
   border-top-right-radius: 4px;
   border-top-left-radius: 4px;
