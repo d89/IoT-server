@@ -36,7 +36,7 @@ self.addEventListener('message', function (evt)
 
     //saving client name
     if (!evt.data.clientName || !evt.data.password) {
-        return //console.error(time(), "SERVICE WORKER message was incomplete");
+        return console.error(time(), "SERVICE WORKER message was incomplete");
     }
 
     var clientName = evt.data.clientName;
@@ -66,6 +66,8 @@ self.addEventListener('message', function (evt)
 
         if (!subscription)
             throw new Error("SERVICE WORKER no push permission or no subscription present!");
+
+        console.info("SERVICE WORKER push subscription", subscription);
 
         var tkn = subscription.endpoint.split("send/")[1];
 

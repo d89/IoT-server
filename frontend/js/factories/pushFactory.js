@@ -78,6 +78,8 @@ IoT.factory('PushFactory', function (constant)
                     throw new Error("not subscribed");
                 }
 
+                console.info("PUSH MANAGER subscription", subscription);
+
                 return cb(null, true);
             }).catch(function (err)
             {
