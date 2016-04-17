@@ -456,7 +456,7 @@ exports.fullAggregation = function(cb)
         {
             if (!firstDoc || !firstDoc[0] || !firstDoc[0].created)
             {
-                return cb("No or invalid item found in timespan!" + firstDoc);
+                return cb("Full aggregation: No or invalid item found in timespan!" + firstDoc);
             }
 
             if (err)
@@ -658,7 +658,7 @@ exports.oldAggregation = function(cb)
         {
             if (!firstDoc || !firstDoc[0] || !firstDoc[0].from)
             {
-                return cb("No or invalid item found in timespan!" + firstDoc);
+                return cb("Old Aggregation: No or invalid item found in timespan!" + firstDoc);
             }
 
             if (err)
