@@ -54,7 +54,7 @@ gulp.task('js-libs', function ()
 
         //for app
         "./frontend/bower_components/socket.io-client/socket.io.js",
-        "./frontend/bower_components/Chart.js/Chart.min.js",
+        "./frontend/bower_components/Chart.js/Chart.js",
         "./frontend/bower_components/moment/min/moment.min.js",
         "./frontend/bower_components/moment/locale/de.js",
         "./frontend/bower_components/angular/angular.min.js",

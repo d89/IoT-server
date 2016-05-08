@@ -14,17 +14,24 @@ apt-get install -y git build-essential
 
 ### node.js
 
-Install node 5 and above, as described here: https://nodejs.org/en/download/package-manager/
+Install node 6 or above, as described here: https://nodejs.org/en/download/package-manager/
 
 ```
-curl -sL https://deb.nodesource.com/setup_5.x | sudo -E bash -
+curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash -
 apt-get install -y nodejs
 ```
 
 ### mongodb
 
 As described here: https://docs.mongodb.org/manual/tutorial/install-mongodb-on-ubuntu/
-Be careful with Ubuntu 15.X as mongo has not switched to systemd yet (https://rohan-paul.github.io/mongodb_in_ubuntu/2015/09/03/How_to_Install_MongoDB_Iin_Ubuntu-15.04.html)
+
+Use either
+
+```
+apt-get install mongodb
+```
+
+or someting like
 
 ```
 apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv EA312927
@@ -33,7 +40,6 @@ apt-get update
 apt-get install -y mongodb-org
 service mongod start
 ```
-
 
 ### SSL
 
