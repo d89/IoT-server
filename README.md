@@ -3,7 +3,29 @@ Home control server unit that works together with IoT-raspberry
 
 ---
 
-## Server-Setup
+## Server-Setup with docker
+
+Place your SSL files in `/etc/letsencrypt` on your host machine.
+
+MongoDB data is stored in `/var/lib/mongodb-iot-server`.
+
+Start the IoT-Server with
+
+    docker-compose up --build -d
+
+To stop
+
+    docker-compose down
+    
+To open a bash of a *running* IoT-Server container
+    
+    docker-compose exec node bash
+    
+To open a bash of a *stopped* IoT-Server container
+    
+    docker-compose run node bash
+
+## Server-Setup without docker
 
 ### Preconditions
 
