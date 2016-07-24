@@ -1,0 +1,36 @@
+version: "2"
+services:
+    db:
+        image: mongo:latest
+        restart: always
+        volumes:
+            - /var/lib/mongodb-iot-server:/data/db:rw
+        networks:
+            default:
+                ipv4_address: 172.16.51.10
+    node:
+        build: .
+        working_dir: /src
+        command: "chmod +x update"
+        volumes:
+            - .:/src:rw
+            - /etc/letsencrypt:/etc/letsencrypt:rw
+        links:
+            - "db:mongo"
+        ports:
+            - "3000:3000"
+        entrypoint: "/src/setup.sh"
+        networks:
+            default:
+                ipv4_address: 172.16.51.11
+
+networks:
+  default:
+    driver: bridge
+    driver_opts:
+      com.docker.network.enable_ipv6: "false"
+    ipam:
+      driver: default
+      config:
+      - subnet: 172.16.51.0/24
+        gateway: 172.16.51.1
