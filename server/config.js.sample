@@ -1,12 +1,15 @@
 module.exports = {
     port: 3000,
-    url: 'https://d1303.de:3000', //no trailing slash
+    url: 'https://example.tld:3000', //no trailing slash
+    useSSL: true,
     sslPrivateKeyPath: '/opt/keys/privkey.pem',
     sslCertificate: '/opt/keys/cert.pem',
     sslCa: '/opt/keys/chain.pem', //delete this line if you don't have a chain
     gcmApiKey: '*** snip ***',
     logFile: '/var/www/IoT-server/logs/logfile.log',
+//    logFile: '/src/logs/logfile.log', // docker
     mediaBasePath: '/var/www/IoT-server/uploads',
+//    mediaBasePath: '/src/uploads', // docker
     dsn: 'mongodb://localhost/IoT',
     mail: {
             smtp: {

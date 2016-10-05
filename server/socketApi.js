@@ -126,7 +126,6 @@ exports.listen = function(server, ssl_object)
 
 exports.getSockets = function()
 {
-    var sockets = io.sockets.sockets;
     var socks = [];
 
     //is array

@@ -1,0 +1,5 @@
+#!/bin/bash
+
+npm i
+bower install --allow-root
+gulp
