@@ -1,0 +1,5 @@
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+MAILTO=""
+0  *    * * *   root    node /src/server/aggregator.js > /dev/null
+37 13   * * *   root    node /src/server/sendpush.js > /dev/null

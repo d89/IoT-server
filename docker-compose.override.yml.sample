@@ -1,0 +1,8 @@
+version: "2"
+services:
+    node:
+        volumes:
+            - .:/src:rw
+            - /etc/letsencrypt:/etc/letsencrypt:rw
+        ports:
+            - "80:3000"

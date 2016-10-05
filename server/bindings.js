@@ -5,11 +5,11 @@ var sockethelper = require("./sockethelper");
 var fs = require('fs');
 var crypto = require('crypto');
 var express = require('express');
-var bodyParser = require('body-parser')
+var bodyParser = require('body-parser');
 var multer = require('multer');
 var app = express();
 var config = require('./config');
-var upload = multer({ dest: config.mediaBasePath })
+var upload = multer({ dest: config.mediaBasePath });
 var storage = require('./storage');
 var video = require('./video');
 var uiApi = require('./uiApi');
@@ -20,28 +20,39 @@ var path = require('path');
 
 //config
 const port = config.port;
-var https = require('https');
 
 //---------------------------------------------------------------------------
+let server = null;
 
-var privateKey = fs.readFileSync(config.sslPrivateKeyPath);
-var certificate = fs.readFileSync(config.sslCertificate);
-var ssl_object = {
-    key: privateKey,
-    cert: certificate
-};
-
-if (config.sslCa && fs.existsSync(config.sslCa))
+if (!config.useSSL)
 {
-    ssl_object.ca = [ fs.readFileSync(config.sslCa) ];
+    const http = require('http');
+    server = http.createServer(app).listen(port, function()
+    {
+        logger.info(`listening on http://0.0.0.0:${port}`);
+    });
+    socketApi.listen(server);
+} else {
+    const https = require('https');
+
+    const privateKey = fs.readFileSync(config.sslPrivateKeyPath);
+    const certificate = fs.readFileSync(config.sslCertificate);
+    const ssl_object = {
+        key: privateKey,
+        cert: certificate
+    };
+
+    if (config.sslCa && fs.existsSync(config.sslCa))
+    {
+        ssl_object.ca = [ fs.readFileSync(config.sslCa) ];
+    }
+
+    server = https.createServer(ssl_object, app).listen(port, function()
+    {
+        logger.info(`listening on https://0.0.0.0:${port}`);
+    });
+    socketApi.listen(server, ssl_object);
 }
-
-var server = https.createServer(ssl_object, app).listen(port, function()
-{
-    logger.info(`listening on *:${port}`);
-});
-
-socketApi.listen(server, ssl_object);
 
 //-----------------------------------------------------------------
 

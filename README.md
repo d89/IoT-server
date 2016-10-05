@@ -5,13 +5,20 @@ Home control server unit that works together with IoT-raspberry
 
 ## Server-Setup with docker
 
+It is strongly recommended to use SSL! If you want to disable SSL, set `useSSL` to false in your config.js. 
+
 Place your SSL files in `/etc/letsencrypt` on your host machine.
 
 MongoDB data is stored in `/var/lib/mongodb-iot-server`.
 
-Start the IoT-Server with
+Build the docker containers with
 
-    docker-compose up --build -d
+    docker-compose build
+    docker-compose run --rm node ./install
+    
+Start the Iot-Server 
+
+    docker-compose up -d
 
 To stop
 
@@ -23,7 +30,7 @@ To open a bash of a *running* IoT-Server container
     
 To open a bash of a *stopped* IoT-Server container
     
-    docker-compose run node bash
+    docker-compose run --rm node bash
 
 ## Server-Setup without docker
 
